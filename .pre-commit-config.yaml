@@ -20,6 +20,15 @@ repos:
         files: ^backend/
         pass_filenames: false
         always_run: false
+      - id: pytest
+        name: pytest (backend)
+        entry: bash -c 'cd backend && .venv/bin/python -m pytest tests -q' --
+        language: system
+        types: [python]
+        files: ^backend/
+        pass_filenames: false
+        always_run: false
+        require_serial: true
       - id: oxlint
         name: oxlint (frontend)
         entry: npx oxlint
