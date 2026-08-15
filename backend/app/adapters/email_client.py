@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import resend
 
-from .config import Settings
+from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -16,21 +16,10 @@ class EmailClient(ABC):
 
 
 class ConsoleEmailClient(EmailClient):
-    """Local fallback: prints the full email to stdout instead of sending it.
-
-    Uses print() rather than the logging framework so the output always shows
-    up in `docker compose logs`, regardless of how uvicorn configures logging.
-    """
+    """Local fallback: logs the full email instead of sending it."""
 
     def send(self, to: str, subject: str, html: str) -> None:
-        print(
-            f"\n===== OUTBOUND EMAIL (console) =====\n"
-            f"To:      {to}\n"
-            f"Subject: {subject}\n"
-            f"Body:\n{html}\n"
-            f"====================================\n",
-            flush=True,
-        )
+        logger.info("OUTBOUND EMAIL\nto: %s\nsubject: %s\n%s", to, subject, html)
 
 
 class ResendEmailClient(EmailClient):

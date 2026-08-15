@@ -5,6 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from .config import get_settings
 
+
 settings = get_settings()
 
 # check_same_thread is a SQLite-only option; harmless to include only there.

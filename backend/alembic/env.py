@@ -1,19 +1,14 @@
 """Alembic environment: offline + online migrations against app models."""
 
-from logging.config import fileConfig
-
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 # Import the app's Base so target_metadata sees all tables.
-from app.db import Base
+from app.core.db import Base
 from app import models  # noqa: F401
-from app.config import get_settings
+from app.core.config import get_settings
 
 config = context.config
-
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
 
 # The database URL always comes from the app's settings (env var), never ini.
 config.set_main_option("sqlalchemy.url", get_settings().DATABASE_URL)

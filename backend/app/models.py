@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from sqlalchemy import CheckConstraint, ForeignKey, Index, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .db import Base
+from .core.db import Base
 
 
 def new_uuid() -> str:
