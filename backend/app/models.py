@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .core.db import Base
 
@@ -35,6 +35,10 @@ class Lead(Base):
         Text, nullable=False, default=utc_now_iso, onupdate=utc_now_iso
     )
 
+    activities: Mapped[list["LeadActivity"]] = relationship(
+        back_populates="lead", order_by="LeadActivity.created_at.desc()"
+    )
+
     __table_args__ = (
         CheckConstraint("state IN ('PENDING', 'REACHED_OUT')", name="ck_leads_state"),
         Index("idx_leads_created_at", created_at.desc()),
@@ -49,6 +53,36 @@ class Attorney(Base):
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(Text, nullable=False, default=utc_now_iso)
+
+
+class LeadActivity(Base):
+    """Audit trail of lead state transitions: who moved what, from/to, when."""
+
+    __tablename__ = "lead_activities"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True, default=new_uuid)
+    lead_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("leads.id"), nullable=False
+    )
+    attorney_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("attorneys.id"), nullable=False
+    )
+    from_state: Mapped[str] = mapped_column(Text, nullable=False)
+    to_state: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[str] = mapped_column(Text, nullable=False, default=utc_now_iso)
+
+    lead: Mapped[Lead] = relationship(back_populates="activities")
+    attorney: Mapped["Attorney"] = relationship()
+
+    __table_args__ = (
+        CheckConstraint(
+            "from_state IN ('PENDING', 'REACHED_OUT')", name="ck_activity_from_state"
+        ),
+        CheckConstraint(
+            "to_state IN ('PENDING', 'REACHED_OUT')", name="ck_activity_to_state"
+        ),
+        Index("idx_activity_lead_id", lead_id),
+    )
 
 
 class EmailOutbox(Base):

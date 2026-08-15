@@ -16,6 +16,21 @@ export interface LeadSummary {
 export interface Lead extends LeadSummary {
   resume_filename: string;
   updated_at: string;
+  activities: LeadActivity[];
+}
+
+export interface LeadActivity {
+  id: string;
+  attorney: Attorney;
+  from_state: LeadState;
+  to_state: LeadState;
+  created_at: string;
+}
+
+export interface Attorney {
+  id: string;
+  email: string;
+  created_at: string;
 }
 
 export interface ApiError {

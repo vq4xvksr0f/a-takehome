@@ -18,11 +18,24 @@ class LeadSummary(BaseModel):
     created_at: str
 
 
+class LeadActivityOut(BaseModel):
+    """One recorded state transition (audit trail entry)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    from_state: str
+    to_state: str
+    created_at: str
+    attorney: "AttorneyOut"
+
+
 class LeadDetail(LeadSummary):
     """Full lead record, including resume metadata and update time."""
 
     resume_filename: str
     updated_at: str
+    activities: list[LeadActivityOut] = []
 
 
 class LeadCreateResponse(LeadDetail):

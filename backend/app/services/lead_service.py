@@ -11,7 +11,7 @@ import uuid
 
 from ..adapters.storage import ObjectStore
 from ..core.errors import conflict, not_found
-from ..models import Lead
+from ..models import Lead, LeadActivity
 from ..repositories.lead_repository import LeadRepository
 from .email_service import EmailService
 from .validation import read_resume_within_cap, resume_extension
@@ -77,7 +77,7 @@ class LeadService:
             raise
 
         logger.info("lead created id=%s email=%s", lead.id, lead.email)
-        self._email_service.send_submission_emails(lead, self._notify_email)
+        self._email_service.send_submission_emails_async(lead, self._notify_email)
         return lead
 
     def list_leads(self, limit: int, offset: int) -> list[Lead]:
@@ -95,12 +95,13 @@ class LeadService:
             lead.resume_object_key, expires=RESUME_URL_EXPIRES_SECONDS
         )
 
-    def update_state(self, lead_id: str, new_state: str) -> Lead:
+    def update_state(self, lead_id: str, new_state: str, attorney_id: str) -> Lead:
         """Transition a lead between PENDING and REACHED_OUT (§5).
 
         The state machine allows a lead to move between the two states in
         either direction. Only the two known states are legal, and a no-op
         "transition" to the current state is a 409 like any other illegal value.
+        Every successful transition is recorded in lead_activities.
         """
         lead = self.get_lead(lead_id)
         if new_state not in ("PENDING", "REACHED_OUT"):
@@ -112,6 +113,12 @@ class LeadService:
             raise conflict(f"Lead is already {lead.state}")
         previous = lead.state
         lead.state = new_state
-        updated = self._leads.save(lead)
+        activity = LeadActivity(
+            lead_id=lead.id,
+            attorney_id=attorney_id,
+            from_state=previous,
+            to_state=new_state,
+        )
+        updated = self._leads.save_state_change(lead, activity)
         logger.info("lead %s transitioned %s -> %s", lead.id, previous, new_state)
         return updated

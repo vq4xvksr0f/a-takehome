@@ -5,6 +5,7 @@ truth, so a delivery failure is logged and never propagated to the caller.
 """
 
 import logging
+import threading
 
 from ..adapters.email_client import (
     EmailClient,
@@ -49,3 +50,40 @@ class EmailService:
             logger.exception(
                 "Failed to send attorney notification for lead %s", lead.id
             )
+
+    def send_submission_emails_async(self, lead: Lead, notify_email: str) -> None:
+        """Fire-and-forget wrapper: send on a daemon thread, never block the request.
+
+        Extracts plain values up front so the thread holds no ORM object bound
+        to a request-scoped session.
+        """
+        lead_id = lead.id
+        lead_email = lead.email
+        first_name = lead.first_name
+        last_name = lead.last_name
+
+        def _send() -> None:
+            try:
+                self._email.send(
+                    to=lead_email,
+                    subject=PROSPECT_SUBJECT,
+                    html=prospect_confirmation_html(first_name),
+                )
+                logger.info("sent prospect confirmation for lead %s", lead_id)
+            except Exception:
+                logger.exception(
+                    "Failed to send prospect confirmation for lead %s", lead_id
+                )
+            try:
+                self._email.send(
+                    to=notify_email,
+                    subject=ATTORNEY_SUBJECT,
+                    html=attorney_notification_html(first_name, last_name, lead_email),
+                )
+                logger.info("sent attorney notification for lead %s", lead_id)
+            except Exception:
+                logger.exception(
+                    "Failed to send attorney notification for lead %s", lead_id
+                )
+
+        threading.Thread(target=_send, daemon=True).start()
