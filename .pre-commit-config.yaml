@@ -33,3 +33,13 @@ repos:
         always_run: false
         require_serial: true
         verbose: false
+      # Frontend unit tests (vitest) — fast enough to run per commit.
+      - id: vitest
+        name: vitest (frontend)
+        entry: npm test --prefix frontend --
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
+        files: ^frontend/src/
+        pass_filenames: false
+        always_run: false
+        require_serial: true
