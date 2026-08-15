@@ -76,6 +76,7 @@ class LeadService:
                 logger.exception("Failed to delete orphan object %s", object_key)
             raise
 
+        logger.info("lead created id=%s email=%s", lead.id, lead.email)
         self._email_service.send_submission_emails(lead, self._notify_email)
         return lead
 
@@ -103,4 +104,6 @@ class LeadService:
                 "only PENDING -> REACHED_OUT is allowed"
             )
         lead.state = "REACHED_OUT"
-        return self._leads.save(lead)
+        updated = self._leads.save(lead)
+        logger.info("lead %s transitioned PENDING -> REACHED_OUT", lead.id)
+        return updated

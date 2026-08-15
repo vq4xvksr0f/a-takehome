@@ -31,6 +31,7 @@ class EmailService:
                 subject=PROSPECT_SUBJECT,
                 html=prospect_confirmation_html(lead.first_name),
             )
+            logger.info("sent prospect confirmation for lead %s", lead.id)
         except Exception:
             logger.exception(
                 "Failed to send prospect confirmation for lead %s", lead.id
@@ -43,6 +44,7 @@ class EmailService:
                     lead.first_name, lead.last_name, lead.email
                 ),
             )
+            logger.info("sent attorney notification for lead %s", lead.id)
         except Exception:
             logger.exception(
                 "Failed to send attorney notification for lead %s", lead.id

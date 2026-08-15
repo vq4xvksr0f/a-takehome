@@ -1,5 +1,7 @@
 """Auth routes: login (sets JWT cookie) and logout (clears it)."""
 
+import logging
+
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,6 +12,8 @@ from ..core.security import create_access_token, verify_password
 from ..models import Attorney
 from .deps import TOKEN_COOKIE, get_db
 from .schemas import AttorneyOut, LoginRequest
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -26,6 +30,7 @@ def login(
         body.password, attorney.password_hash
     ):
         # Deliberately generic: don't reveal whether the account exists.
+        logger.warning("failed login attempt for %s", body.email)
         raise unauthorized("Invalid credentials")
 
     token = create_access_token(attorney.id, attorney.email)
@@ -38,6 +43,7 @@ def login(
         secure=settings.COOKIE_SECURE,
         path="/",
     )
+    logger.info("attorney %s logged in", attorney.email)
     return attorney
 
 
