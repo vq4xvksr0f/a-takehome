@@ -104,6 +104,6 @@ def update_lead_state(
     lead_id: str,
     body: LeadStateUpdate,
     service: LeadService = Depends(get_lead_service),
-    _: Attorney = Depends(get_current_attorney),
+    attorney: Attorney = Depends(get_current_attorney),
 ) -> Lead:
-    return service.update_state(lead_id, body.state)
+    return service.update_state(lead_id, body.state, attorney.id)

@@ -12,3 +12,5 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 # email_client sits below the adapter classes by design.
 "tests/*" = ["B011", "E402"]
 "app/adapters/email_client.py" = ["E402"]
+# demo_seed embeds raw PDF object syntax whose long lines can't be split.
+"app/core/demo_seed.py" = ["E501"]

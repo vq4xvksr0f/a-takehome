@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { apiFetch } from '@/server/api-client';
-import { formatDate } from '@/lib/format';
 import type { Lead } from '@/types/lead';
 import AttorneyHeader from '@/components/auth/AttorneyHeader';
+import LocalTime from '@/components/LocalTime';
 import StateBadge from '../StateBadge';
 import layoutStyles from '../leads-layout.module.css';
 import shared from '@/styles/shared.module.css';
@@ -38,7 +38,8 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
         <AttorneyHeader />
       </header>
 
-      <div className={`${shared.card} ${detailStyles['detail-card']}`}>
+      <div className={detailStyles['detail-columns']}>
+        <div className={`${shared.card} ${detailStyles['detail-card']}`}>
         <dl className={detailStyles['detail-grid']}>
           <div className={detailStyles['detail-item']}>
             <dt>First name</dt>
@@ -71,13 +72,39 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
           </div>
           <div className={detailStyles['detail-item']}>
             <dt>Submitted</dt>
-            <dd>{formatDate(lead.created_at)}</dd>
+            <dd><LocalTime iso={lead.created_at} /></dd>
           </div>
           <div className={detailStyles['detail-item']}>
             <dt>Last updated</dt>
-            <dd>{formatDate(lead.updated_at)}</dd>
+            <dd><LocalTime iso={lead.updated_at} /></dd>
           </div>
         </dl>
+        </div>
+
+        <div className={`${shared.card} ${detailStyles['activity-card']}`}>
+        <h2 className={detailStyles['activity-heading']}>Activity</h2>
+        {lead.activities.length === 0 ? (
+          <p className={detailStyles['activity-empty']}>No state changes yet.</p>
+        ) : (
+          <ul className={detailStyles['activity-list']}>
+            {lead.activities.map((a) => (
+              <li key={a.id} className={detailStyles['activity-item']}>
+                <span className={detailStyles['activity-change']}>
+                  <StateBadge state={a.from_state} />
+                  <span className={detailStyles['activity-arrow']} aria-hidden="true">→</span>
+                  <StateBadge state={a.to_state} />
+                </span>
+                <span className={detailStyles['activity-meta']}>
+                  <span className={detailStyles['activity-actor']}>{a.attorney.email}</span>
+                  <time className={detailStyles['activity-time']}>
+                    <LocalTime iso={a.created_at} />
+                  </time>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        </div>
       </div>
     </main>
   );

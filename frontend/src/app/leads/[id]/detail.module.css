@@ -1,11 +1,18 @@
 /* ── Lead detail ────────────────────────────────────────── */
+.detail-columns {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
 .detail-card {
   /* Modifier combined with the shared .card class. */
 }
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.25rem;
   margin: 0;
 }
@@ -26,4 +33,106 @@
 .text-link {
   color: var(--color-primary);
   font-weight: 600;
+}
+
+/* ── Activity (sidebar timeline) ────────────────────────── */
+.activity-card {
+  /* Modifier combined with the shared .card class. */
+}
+
+.activity-heading {
+  margin: 0 0 1.25rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.activity-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each entry is a timeline node: a dot on a vertical rail. */
+.activity-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0 0 1.25rem 1.5rem;
+}
+
+/* Vertical rail connecting the dots. */
+.activity-item::before {
+  content: '';
+  position: absolute;
+  left: 0.31rem;
+  top: 0.55rem;
+  bottom: -0.55rem;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.activity-item:last-child {
+  padding-bottom: 0;
+}
+
+.activity-item:last-child::before {
+  display: none;
+}
+
+/* The dot. */
+.activity-item::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+}
+
+.activity-change {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.activity-arrow {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.activity-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-left: 0.1rem;
+}
+
+.activity-actor {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.activity-time {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 720px) {
+  .detail-columns {
+    grid-template-columns: 1fr;
+  }
 }

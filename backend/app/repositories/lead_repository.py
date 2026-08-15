@@ -7,9 +7,9 @@ they never construct SQLAlchemy statements themselves.
 from collections.abc import Sequence
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
-from ..models import Lead
+from ..models import Lead, LeadActivity
 
 
 class LeadRepository:
@@ -28,7 +28,14 @@ class LeadRepository:
         return lead
 
     def get(self, lead_id: str) -> Lead | None:
-        return self._db.get(Lead, lead_id)
+        # Eagerly load activities (and their attorneys) so the detail response
+        # can render the audit trail without extra queries.
+        stmt = (
+            select(Lead)
+            .where(Lead.id == lead_id)
+            .options(selectinload(Lead.activities).selectinload(LeadActivity.attorney))
+        )
+        return self._db.scalars(stmt).first()
 
     def list(self, limit: int, offset: int) -> Sequence[Lead]:
         """Newest-first page of leads."""
@@ -37,6 +44,13 @@ class LeadRepository:
 
     def save(self, lead: Lead) -> Lead:
         """Commit in-place changes to an existing lead."""
+        self._db.commit()
+        self._db.refresh(lead)
+        return lead
+
+    def save_state_change(self, lead: Lead, activity: LeadActivity) -> Lead:
+        """Commit a state change and its audit row in one transaction."""
+        self._db.add(activity)
         self._db.commit()
         self._db.refresh(lead)
         return lead

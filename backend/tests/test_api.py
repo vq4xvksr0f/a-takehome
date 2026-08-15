@@ -8,7 +8,9 @@ used per test, and migrations + seed run once per session against that file.
 import io
 import os
 import tempfile
+import time
 import uuid
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -105,6 +107,67 @@ def _login(client: TestClient) -> TestClient:
 # ── Tests ────────────────────────────────────────────────────────────────
 
 
+def test_email_send_retries_then_succeeds() -> None:
+    """A flaky client is retried until the send goes through."""
+    from app.models import Lead
+    from app.services.email_service import EmailService
+
+    attempts = {"n": 0}
+
+    class FlakyClient:
+        def send(self, to: str, subject: str, html: str) -> None:
+            attempts["n"] += 1
+            if attempts["n"] < 3:
+                raise RuntimeError("transient provider error")
+
+    # Skip the real backoff sleeps so the test stays fast.
+    with patch("app.services.email_service.time.sleep", return_value=None):
+        svc = EmailService(FlakyClient())
+        lead = Lead(
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
+            state="PENDING",
+            resume_object_key="k",
+            resume_filename="r.pdf",
+        )
+        svc.send_submission_emails(lead, "attorney@tryalma.com")
+
+    # Prospect email failed twice then succeeded (3 attempts); attorney email
+    # succeeded first try (1 attempt).
+    assert attempts["n"] == 4
+
+
+def test_email_send_gives_up_without_raising() -> None:
+    """A permanently failing client is dropped after MAX_ATTEMPTS, no exception."""
+    from app.models import Lead
+    from app.services import email_service
+    from app.services.email_service import EmailService
+
+    calls = {"n": 0}
+
+    class AlwaysFailClient:
+        def send(self, to: str, subject: str, html: str) -> None:
+            calls["n"] += 1
+            raise RuntimeError("provider down")
+
+    with patch("app.services.email_service.time.sleep", return_value=None):
+        svc = EmailService(AlwaysFailClient())
+        lead = Lead(
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
+            state="PENDING",
+            resume_object_key="k",
+            resume_filename="r.pdf",
+        )
+        # Must not raise even though every attempt fails.
+        svc.send_submission_emails(lead, "attorney@tryalma.com")
+
+    # Both emails attempted MAX_ATTEMPTS times each.
+    assert calls["n"] == 2 * email_service._MAX_ATTEMPTS
+
+
 def test_health_is_public(client: TestClient) -> None:
     resp = client.get("/api/health")
     assert resp.status_code == 200
@@ -123,7 +186,11 @@ def test_submit_lead_success_persists_and_emails(client: TestClient) -> None:
     assert len(fake_store.objects) == 1
     key = next(iter(fake_store.objects))
     assert key.startswith("resumes/") and key.endswith(".pdf")
-    # Both emails were sent (prospect + attorney notification).
+    # Both emails were sent (prospect + attorney notification). Sends are
+    # fire-and-forget on a background thread, so allow a brief window.
+    deadline = time.time() + 5
+    while time.time() < deadline and len(spy_email.sent) < 2:
+        time.sleep(0.05)
     recipients = {m["to"] for m in spy_email.sent}
     assert body["email"] in recipients
     assert "attorney@tryalma.com" in recipients
@@ -198,6 +265,33 @@ def test_patch_invalid_state_value_is_409(client: TestClient) -> None:
     _login(client)
     resp = client.patch(f"/api/leads/{lead_id}", json={"state": "BOGUS"})
     assert resp.status_code == 409
+
+
+def test_state_transitions_are_recorded_in_activity(client: TestClient) -> None:
+    lead_id = _submit_lead(client).json()["id"]
+    _login(client)
+
+    client.patch(f"/api/leads/{lead_id}", json={"state": "REACHED_OUT"})
+    client.patch(f"/api/leads/{lead_id}", json={"state": "PENDING"})
+
+    detail = client.get(f"/api/leads/{lead_id}").json()
+    activities = detail["activities"]
+    assert len(activities) == 2
+    # Newest first.
+    assert (activities[0]["from_state"], activities[0]["to_state"]) == (
+        "REACHED_OUT",
+        "PENDING",
+    )
+    assert (activities[1]["from_state"], activities[1]["to_state"]) == (
+        "PENDING",
+        "REACHED_OUT",
+    )
+    # Attributed to the logged-in attorney (the seeded admin), shown by email.
+    assert all(a["attorney"]["email"] == "admin@tryalma.com" for a in activities)
+    # Failed transitions record nothing.
+    assert client.patch(f"/api/leads/{lead_id}", json={"state": "PENDING"}).status_code == 409
+    detail = client.get(f"/api/leads/{lead_id}").json()
+    assert len(detail["activities"]) == 2
 
 
 def test_patch_unknown_lead_is_404(client: TestClient) -> None:
