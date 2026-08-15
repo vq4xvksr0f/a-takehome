@@ -40,12 +40,30 @@
 }
 
 .board-lane-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin: 0;
   font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-muted);
+}
+
+/* Per-lane icon hue, matching each lane's badge color (amber/green). */
+.lane-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.lane-icon-pending {
+  color: var(--color-pending-text);
+}
+
+.lane-icon-reached {
+  color: var(--color-reached-text);
 }
 
 .lane-count {
