@@ -23,24 +23,6 @@
   font-weight: 500;
 }
 
-.detail-actions {
-  margin-top: 1.75rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.state-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.inline-error {
-  font-size: 0.85rem;
-  color: var(--color-error);
-}
-
 .text-link {
   color: var(--color-primary);
   font-weight: 600;
