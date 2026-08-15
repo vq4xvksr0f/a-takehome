@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LeadSummary } from '@/types/lead';
 import { useLeadsBoard } from './useLeadsBoard';
 
-// useRouter is only used for refresh() after a successful PATCH.
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }));
@@ -20,7 +19,6 @@ const lead = (id: string, state: LeadSummary['state']): LeadSummary => ({
 
 const initial = [lead('a', 'PENDING'), lead('b', 'PENDING'), lead('c', 'REACHED_OUT')];
 
-/** Drive a full drag lifecycle: start → over(target) → end. */
 function dragTo(
   result: { current: ReturnType<typeof useLeadsBoard> },
   activeId: string,
@@ -77,12 +75,10 @@ describe('useLeadsBoard', () => {
     );
     const { result } = renderHook(() => useLeadsBoard(initial));
     dragTo(result, 'a', 'REACHED_OUT');
-    // persistState is fire-and-forget from handleDragEnd; let it settle.
     await act(async () => {
       await new Promise((r) => setTimeout(r, 0));
     });
     expect(result.current.error).toBe('boom');
-    // Rolled back to pre-drag state.
     expect(result.current.lanes.PENDING.map((l) => l.id)).toEqual(['a', 'b']);
     expect(result.current.lanes.REACHED_OUT.map((l) => l.id)).toEqual(['c']);
   });
@@ -95,19 +91,17 @@ describe('useLeadsBoard', () => {
     act(() => {
       result.current.handleDragOver({ active: { id: 'a' }, over: { id: 'REACHED_OUT' } } as never);
     });
-    // Card is visually over the other lane mid-drag...
     expect(result.current.lanes.REACHED_OUT.map((l) => l.id)).toContain('a');
     act(() => {
       result.current.handleDragEnd({ active: { id: 'a' }, over: null } as never);
     });
-    // ...and restored on drop-outside.
     expect(result.current.lanes.PENDING.map((l) => l.id)).toEqual(['a', 'b']);
     expect(fetch).not.toHaveBeenCalled();
   });
 
   it('does not PATCH when the card stays in its lane', () => {
     const { result } = renderHook(() => useLeadsBoard(initial));
-    dragTo(result, 'a', 'b'); // reorder within PENDING
+    dragTo(result, 'a', 'b');
     expect(fetch).not.toHaveBeenCalled();
   });
 });
