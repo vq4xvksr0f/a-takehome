@@ -65,9 +65,7 @@ class EmailService:
                 )
                 logger.info("sent prospect confirmation for lead %s", lead_id)
             except Exception:
-                logger.exception(
-                    "Failed to send prospect confirmation for lead %s", lead_id
-                )
+                logger.exception("Failed to send prospect confirmation for lead %s", lead_id)
             try:
                 self._email.send(
                     to=notify_email,
@@ -76,8 +74,6 @@ class EmailService:
                 )
                 logger.info("sent attorney notification for lead %s", lead_id)
             except Exception:
-                logger.exception(
-                    "Failed to send attorney notification for lead %s", lead_id
-                )
+                logger.exception("Failed to send attorney notification for lead %s", lead_id)
 
         threading.Thread(target=_send, daemon=True).start()

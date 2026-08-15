@@ -5,8 +5,9 @@ Revises: 0001_initial
 Create Date: 2026-08-15 00:00:00.000000
 """
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = "0002_lead_activities"
 down_revision = "0001_initial"
@@ -18,9 +19,7 @@ def upgrade() -> None:
     op.create_table(
         "lead_activities",
         sa.Column("id", sa.Text(), primary_key=True),
-        sa.Column(
-            "lead_id", sa.Text(), sa.ForeignKey("leads.id"), nullable=False
-        ),
+        sa.Column("lead_id", sa.Text(), sa.ForeignKey("leads.id"), nullable=False),
         sa.Column(
             "attorney_id",
             sa.Text(),

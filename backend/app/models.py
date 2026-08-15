@@ -61,12 +61,8 @@ class LeadActivity(Base):
     __tablename__ = "lead_activities"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=new_uuid)
-    lead_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("leads.id"), nullable=False
-    )
-    attorney_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("attorneys.id"), nullable=False
-    )
+    lead_id: Mapped[str] = mapped_column(Text, ForeignKey("leads.id"), nullable=False)
+    attorney_id: Mapped[str] = mapped_column(Text, ForeignKey("attorneys.id"), nullable=False)
     from_state: Mapped[str] = mapped_column(Text, nullable=False)
     to_state: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(Text, nullable=False, default=utc_now_iso)
@@ -75,12 +71,8 @@ class LeadActivity(Base):
     attorney: Mapped["Attorney"] = relationship()
 
     __table_args__ = (
-        CheckConstraint(
-            "from_state IN ('PENDING', 'REACHED_OUT')", name="ck_activity_from_state"
-        ),
-        CheckConstraint(
-            "to_state IN ('PENDING', 'REACHED_OUT')", name="ck_activity_to_state"
-        ),
+        CheckConstraint("from_state IN ('PENDING', 'REACHED_OUT')", name="ck_activity_from_state"),
+        CheckConstraint("to_state IN ('PENDING', 'REACHED_OUT')", name="ck_activity_to_state"),
         Index("idx_activity_lead_id", lead_id),
     )
 

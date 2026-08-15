@@ -30,8 +30,10 @@ class LeadRepository:
     def get(self, lead_id: str) -> Lead | None:
         # Eagerly load activities (and their attorneys) so the detail response
         # can render the audit trail without extra queries.
-        stmt = select(Lead).where(Lead.id == lead_id).options(
-            selectinload(Lead.activities).selectinload(LeadActivity.attorney)
+        stmt = (
+            select(Lead)
+            .where(Lead.id == lead_id)
+            .options(selectinload(Lead.activities).selectinload(LeadActivity.attorney))
         )
         return self._db.scalars(stmt).first()
 
@@ -46,9 +48,7 @@ class LeadRepository:
         self._db.refresh(lead)
         return lead
 
-    def save_state_change(
-        self, lead: Lead, activity: LeadActivity
-    ) -> Lead:
+    def save_state_change(self, lead: Lead, activity: LeadActivity) -> Lead:
         """Commit a state change and its audit row in one transaction."""
         self._db.add(activity)
         self._db.commit()
