@@ -180,7 +180,7 @@ def test_logout_clears_cookie(client: TestClient) -> None:
     assert client.cookies.get("alma_token") in (None, "")
 
 
-def test_state_transition_pending_to_reached_out_then_409(client: TestClient) -> None:
+def test_state_transition_is_two_way_then_same_state_409(client: TestClient) -> None:
     lead_id = _submit_lead(client).json()["id"]
     _login(client)
 
@@ -188,8 +188,12 @@ def test_state_transition_pending_to_reached_out_then_409(client: TestClient) ->
     assert resp.status_code == 200
     assert resp.json()["state"] == "REACHED_OUT"
 
-    # Second transition attempt is a conflict.
-    resp = client.patch(f"/api/leads/{lead_id}", json={"state": "REACHED_OUT"})
+    resp = client.patch(f"/api/leads/{lead_id}", json={"state": "PENDING"})
+    assert resp.status_code == 200
+    assert resp.json()["state"] == "PENDING"
+
+    # A no-op transition to the current state is a conflict.
+    resp = client.patch(f"/api/leads/{lead_id}", json={"state": "PENDING"})
     assert resp.status_code == 409
     assert resp.json()["code"] == "CONFLICT"
 
@@ -197,7 +201,7 @@ def test_state_transition_pending_to_reached_out_then_409(client: TestClient) ->
 def test_patch_invalid_state_value_is_409(client: TestClient) -> None:
     lead_id = _submit_lead(client).json()["id"]
     _login(client)
-    resp = client.patch(f"/api/leads/{lead_id}", json={"state": "PENDING"})
+    resp = client.patch(f"/api/leads/{lead_id}", json={"state": "BOGUS"})
     assert resp.status_code == 409
 
 
