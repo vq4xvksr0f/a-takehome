@@ -10,6 +10,7 @@ import os
 import tempfile
 import time
 import uuid
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -104,6 +105,67 @@ def _login(client: TestClient) -> TestClient:
 
 
 # ── Tests ────────────────────────────────────────────────────────────────
+
+
+def test_email_send_retries_then_succeeds() -> None:
+    """A flaky client is retried until the send goes through."""
+    from app.models import Lead
+    from app.services.email_service import EmailService
+
+    attempts = {"n": 0}
+
+    class FlakyClient:
+        def send(self, to: str, subject: str, html: str) -> None:
+            attempts["n"] += 1
+            if attempts["n"] < 3:
+                raise RuntimeError("transient provider error")
+
+    # Skip the real backoff sleeps so the test stays fast.
+    with patch("app.services.email_service.time.sleep", return_value=None):
+        svc = EmailService(FlakyClient())
+        lead = Lead(
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
+            state="PENDING",
+            resume_object_key="k",
+            resume_filename="r.pdf",
+        )
+        svc.send_submission_emails(lead, "attorney@tryalma.com")
+
+    # Prospect email failed twice then succeeded (3 attempts); attorney email
+    # succeeded first try (1 attempt).
+    assert attempts["n"] == 4
+
+
+def test_email_send_gives_up_without_raising() -> None:
+    """A permanently failing client is dropped after MAX_ATTEMPTS, no exception."""
+    from app.models import Lead
+    from app.services import email_service
+    from app.services.email_service import EmailService
+
+    calls = {"n": 0}
+
+    class AlwaysFailClient:
+        def send(self, to: str, subject: str, html: str) -> None:
+            calls["n"] += 1
+            raise RuntimeError("provider down")
+
+    with patch("app.services.email_service.time.sleep", return_value=None):
+        svc = EmailService(AlwaysFailClient())
+        lead = Lead(
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
+            state="PENDING",
+            resume_object_key="k",
+            resume_filename="r.pdf",
+        )
+        # Must not raise even though every attempt fails.
+        svc.send_submission_emails(lead, "attorney@tryalma.com")
+
+    # Both emails attempted MAX_ATTEMPTS times each.
+    assert calls["n"] == 2 * email_service._MAX_ATTEMPTS
 
 
 def test_health_is_public(client: TestClient) -> None:
