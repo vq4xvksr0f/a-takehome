@@ -28,9 +28,7 @@ class ResendEmailClient(EmailClient):
         self._from = settings.EMAIL_FROM
 
     def send(self, to: str, subject: str, html: str) -> None:
-        resend.Emails.send(
-            {"from": self._from, "to": [to], "subject": subject, "html": html}
-        )
+        resend.Emails.send({"from": self._from, "to": [to], "subject": subject, "html": html})
 
 
 def build_email_client(settings: Settings) -> EmailClient:
@@ -40,5 +38,7 @@ def build_email_client(settings: Settings) -> EmailClient:
 
 
 # Back-compat re-exports: the template functions now live in ./templates.
-from .templates import attorney_notification_html, prospect_confirmation_html  # noqa: E402,F401
-
+from .templates import (  # noqa: F401
+    attorney_notification_html,
+    prospect_confirmation_html,
+)

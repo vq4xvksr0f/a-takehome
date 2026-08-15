@@ -1,12 +1,13 @@
 """Alembic environment: offline + online migrations against app models."""
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+from alembic import context
+from app import models  # noqa: F401
+from app.core.config import get_settings
 
 # Import the app's Base so target_metadata sees all tables.
 from app.core.db import Base
-from app import models  # noqa: F401
-from app.core.config import get_settings
 
 config = context.config
 

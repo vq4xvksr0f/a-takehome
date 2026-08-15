@@ -67,16 +67,16 @@ export function useLeadsBoard(initialLeads: LeadSummary[]) {
       return;
     }
 
-    const activeId = String(active.id);
+    const draggedId = String(active.id);
     const overId = over.id;
     const lane = resolveLane(overId);
     setOverLane(lane);
     if (!lane) return;
 
     setLeads((prev) => {
-      const current = prev.find((l) => l.id === activeId);
+      const current = prev.find((l) => l.id === draggedId);
       if (!current) return prev;
-      const activeIndex = prev.findIndex((l) => l.id === activeId);
+      const activeIndex = prev.findIndex((l) => l.id === draggedId);
 
       // Moving within the same lane → reorder to the hovered position.
       if (current.state === lane) {
@@ -88,7 +88,7 @@ export function useLeadsBoard(initialLeads: LeadSummary[]) {
       // Moving across lanes → change state, then place the card at the hovered
       // card's index (or at the end of the lane when hovering empty lane body).
       const moved: LeadSummary = { ...current, state: lane };
-      const without = prev.filter((l) => l.id !== activeId);
+      const without = prev.filter((l) => l.id !== draggedId);
       const overIndex = without.findIndex((l) => l.id === overId);
       if (overIndex === -1) {
         // Hovering the lane container itself — append to that lane's end.

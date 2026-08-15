@@ -1,6 +1,6 @@
 """Password hashing (bcrypt) and JWT creation/verification (HS256)."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
@@ -23,7 +23,7 @@ def verify_password(plain: str, password_hash: str) -> bool:
 
 def create_access_token(attorney_id: str, email: str) -> str:
     settings = get_settings()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     claims = {
         "sub": attorney_id,
         "email": email,

@@ -43,9 +43,7 @@ def get_email_client(settings: Settings = Depends(get_settings)) -> EmailClient:
     return _email_client
 
 
-def get_current_attorney(
-    request: Request, db: Session = Depends(get_db)
-) -> Attorney:
+def get_current_attorney(request: Request, db: Session = Depends(get_db)) -> Attorney:
     """Require a valid `alma_token` JWT cookie; 401 on any failure."""
     token = request.cookies.get(TOKEN_COOKIE)
     if not token:
@@ -53,7 +51,7 @@ def get_current_attorney(
     try:
         claims = decode_access_token(token)
     except jwt.PyJWTError:
-        raise unauthorized("Invalid or expired token")
+        raise unauthorized("Invalid or expired token") from None
     attorney_id = claims.get("sub")
     if not attorney_id:
         raise unauthorized("Invalid or expired token")

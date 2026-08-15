@@ -38,9 +38,7 @@ class BotoObjectStore(ObjectStore):
             config=BotoConfig(s3={"addressing_style": "path"}),
         )
         self._bucket = settings.S3_BUCKET
-        self._client = boto3.client(
-            "s3", endpoint_url=settings.S3_ENDPOINT_URL, **common
-        )
+        self._client = boto3.client("s3", endpoint_url=settings.S3_ENDPOINT_URL, **common)
         self._signing_client = boto3.client(
             "s3", endpoint_url=settings.S3_PUBLIC_ENDPOINT, **common
         )

@@ -37,7 +37,7 @@ def validate_email(email: str) -> str:
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             "Invalid email address",
             "VALIDATION_ERROR",
-        )
+        ) from None
 
 
 def resume_extension(filename: str | None) -> str:
