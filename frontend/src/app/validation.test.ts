@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapValidationErrors, validateLeadForm } from './validation';
+import { mapValidationErrors, MAX_RESUME_BYTES, validateLeadForm } from './validation';
 
 const validFile = new File(['x'], 'resume.pdf', { type: 'application/pdf' });
 
@@ -48,6 +48,50 @@ describe('validateLeadForm', () => {
       resume: null,
     });
     expect(errors.resume).toBeTruthy();
+  });
+
+  it.each([
+    ['photo.png', 'image/png'],
+    ['RESUME.PNG', 'image/png'],
+    ['no-extension', ''],
+  ])('rejects a %j resume with a clear message', (name, type) => {
+    const errors = validateLeadForm({
+      firstName: 'Alex',
+      lastName: 'Rivera',
+      email: 'alex@example.com',
+      resume: new File(['x'], name, { type }),
+    });
+    expect(errors.resume).toBe('Unsupported file type; allowed: .pdf, .doc, .docx');
+  });
+
+  it('accepts an uppercase extension on an allowed type', () => {
+    const errors = validateLeadForm({
+      firstName: 'Alex',
+      lastName: 'Rivera',
+      email: 'alex@example.com',
+      resume: new File(['x'], 'resume.PDF', { type: 'application/pdf' }),
+    });
+    expect(errors).toEqual({});
+  });
+
+  it('rejects a resume over 10 MB', () => {
+    const errors = validateLeadForm({
+      firstName: 'Alex',
+      lastName: 'Rivera',
+      email: 'alex@example.com',
+      resume: new File([new Uint8Array(MAX_RESUME_BYTES + 1)], 'resume.pdf'),
+    });
+    expect(errors.resume).toBe('Resume exceeds the 10 MB limit');
+  });
+
+  it('accepts a resume at exactly 10 MB', () => {
+    const errors = validateLeadForm({
+      firstName: 'Alex',
+      lastName: 'Rivera',
+      email: 'alex@example.com',
+      resume: new File([new Uint8Array(MAX_RESUME_BYTES)], 'resume.pdf'),
+    });
+    expect(errors).toEqual({});
   });
 });
 
