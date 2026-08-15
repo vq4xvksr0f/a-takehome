@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from './AccountMenu.module.css';
 
 interface Props {
   email: string;
@@ -51,29 +52,29 @@ export default function AccountMenu({ email }: Props) {
   }
 
   return (
-    <div className="account-menu" ref={rootRef}>
+    <div className={styles['account-menu']} ref={rootRef}>
       <button
         type="button"
-        className="account-avatar-btn"
+        className={styles['account-avatar-btn']}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="attorney-avatar" aria-hidden="true">
+        <span className={styles['attorney-avatar']} aria-hidden="true">
           {initial}
         </span>
       </button>
 
       {open && (
-        <div className="account-dropdown" role="menu">
-          <div className="account-email" title={email}>
+        <div className={styles['account-dropdown']} role="menu">
+          <div className={styles['account-email']} title={email}>
             {email}
           </div>
           <button
             type="button"
             role="menuitem"
-            className="account-logout"
+            className={styles['account-logout']}
             onClick={handleLogout}
             disabled={pending}
           >

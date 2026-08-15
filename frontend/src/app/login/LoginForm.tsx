@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import shared from '@/styles/shared.module.css';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -54,13 +55,13 @@ export default function LoginForm() {
   }
 
   return (
-    <main className="centered-page">
-      <div className="card form-card">
-        <h1 className="page-title">Attorney sign in</h1>
-        <p className="page-subtitle">Sign in to review and manage incoming leads.</p>
+    <main className={shared['centered-page']}>
+      <div className={`${shared.card} ${shared['form-card']}`}>
+        <h1 className={shared['page-title']}>Attorney sign in</h1>
+        <p className={shared['page-subtitle']}>Sign in to review and manage incoming leads.</p>
 
         <form onSubmit={handleSubmit}>
-          <div className="field">
+          <div className={shared.field}>
             <label htmlFor="email">Email</label>
             <input
               id="email"
@@ -71,7 +72,7 @@ export default function LoginForm() {
               required
             />
           </div>
-          <div className="field">
+          <div className={shared.field}>
             <label htmlFor="password">Password</label>
             <input
               id="password"
@@ -84,12 +85,16 @@ export default function LoginForm() {
           </div>
 
           {error && (
-            <div className="alert alert-error" role="alert">
+            <div className={`${shared.alert} ${shared['alert-error']}`} role="alert">
               {error}
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
+          <button
+            type="submit"
+            className={`${shared.btn} ${shared['btn-primary']} ${shared['btn-block']}`}
+            disabled={submitting}
+          >
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>

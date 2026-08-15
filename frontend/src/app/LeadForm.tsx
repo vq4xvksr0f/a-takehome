@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ACCEPTED_RESUME_TYPES,
@@ -8,6 +8,9 @@ import {
   mapValidationErrors,
   validateLeadForm,
 } from './validation';
+import pageStyles from './page.module.css';
+import formStyles from './LeadForm.module.css';
+import shared from '@/styles/shared.module.css';
 
 export default function LeadForm() {
   const router = useRouter();
@@ -18,6 +21,7 @@ export default function LeadForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,83 +86,97 @@ export default function LeadForm() {
   }
 
   return (
-    <main className="centered-page">
-      <div className="card form-card">
-        <h1 className="page-title">Start your case evaluation</h1>
-        <p className="page-subtitle">
-          Tell us how to reach you and attach your resume. An attorney will
-          review your submission and get back to you.
-        </p>
+    <div className={pageStyles['form-pane-inner']}>
+      <h1 className={`${shared['page-title']} ${pageStyles.formTitle}`}>
+        Start your case evaluation
+      </h1>
+      <p className={shared['page-subtitle']}>
+        Tell us how to reach you and attach your resume.
+      </p>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="field-row">
-            <div className="field">
-              <label htmlFor="firstName">First name</label>
-              <input
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                autoComplete="given-name"
-                aria-invalid={Boolean(fieldErrors.firstName)}
-              />
-              {fieldErrors.firstName && (
-                <p className="field-error">{fieldErrors.firstName}</p>
-              )}
-            </div>
-            <div className="field">
-              <label htmlFor="lastName">Last name</label>
-              <input
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                autoComplete="family-name"
-                aria-invalid={Boolean(fieldErrors.lastName)}
-              />
-              {fieldErrors.lastName && (
-                <p className="field-error">{fieldErrors.lastName}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="field">
-            <label htmlFor="email">Email</label>
+      <form onSubmit={handleSubmit} noValidate>
+        <div className={shared['field-row']}>
+          <div className={shared.field}>
+            <label htmlFor="firstName">First name</label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              aria-invalid={Boolean(fieldErrors.email)}
+              id="firstName"
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              autoComplete="given-name"
+              aria-invalid={Boolean(fieldErrors.firstName)}
             />
-            {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
+            {fieldErrors.firstName && (
+              <p className={shared['field-error']}>{fieldErrors.firstName}</p>
+            )}
           </div>
-
-          <div className="field">
-            <label htmlFor="resume">Resume</label>
+          <div className={shared.field}>
+            <label htmlFor="lastName">Last name</label>
             <input
-              id="resume"
-              type="file"
-              accept={ACCEPTED_RESUME_TYPES}
-              onChange={(e) => setResume(e.target.files?.[0] ?? null)}
-              aria-invalid={Boolean(fieldErrors.resume)}
+              id="lastName"
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              autoComplete="family-name"
+              aria-invalid={Boolean(fieldErrors.lastName)}
             />
-            <p className="field-hint">Accepted formats: PDF, DOC, DOCX (max 10 MB).</p>
-            {fieldErrors.resume && <p className="field-error">{fieldErrors.resume}</p>}
+            {fieldErrors.lastName && (
+              <p className={shared['field-error']}>{fieldErrors.lastName}</p>
+            )}
           </div>
+        </div>
 
-          {formError && (
-            <div className="alert alert-error" role="alert">
-              {formError}
-            </div>
-          )}
+        <div className={shared.field}>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            aria-invalid={Boolean(fieldErrors.email)}
+          />
+          {fieldErrors.email && <p className={shared['field-error']}>{fieldErrors.email}</p>}
+        </div>
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-            {submitting ? 'Submitting…' : 'Submit'}
+        <div className={shared.field}>
+          <label htmlFor="resume">Resume</label>
+          {/* Native input stays for accessibility/validation, hidden visually
+              behind a styled picker button. */}
+          <input
+            id="resume"
+            ref={fileInputRef}
+            type="file"
+            className={formStyles['file-input-hidden']}
+            accept={ACCEPTED_RESUME_TYPES}
+            onChange={(e) => setResume(e.target.files?.[0] ?? null)}
+            aria-invalid={Boolean(fieldErrors.resume)}
+          />
+          <button
+            type="button"
+            className={formStyles['file-picker']}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {resume ? resume.name : 'Choose a file…'}
           </button>
-        </form>
-      </div>
-    </main>
+          <p className={shared['field-hint']}>PDF, DOC, or DOCX, up to 10 MB.</p>
+          {fieldErrors.resume && <p className={shared['field-error']}>{fieldErrors.resume}</p>}
+        </div>
+
+        {formError && (
+          <div className={`${shared.alert} ${shared['alert-error']}`} role="alert">
+            {formError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className={`${shared.btn} ${shared['btn-primary']} ${shared['btn-block']}`}
+          disabled={submitting}
+        >
+          {submitting ? 'Submitting…' : 'Submit'}
+        </button>
+      </form>
+    </div>
   );
 }

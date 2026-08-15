@@ -39,22 +39,6 @@ def build_email_client(settings: Settings) -> EmailClient:
     return ConsoleEmailClient()
 
 
-# ── Templates (plain transactional HTML) ─────────────────────────────────
+# Back-compat re-exports: the template functions now live in ./templates.
+from .templates import attorney_notification_html, prospect_confirmation_html  # noqa: E402,F401
 
-
-def prospect_confirmation_html(first_name: str) -> str:
-    return (
-        "<html><body>"
-        f"<p>Thanks {first_name}, we received your application.</p>"
-        "<p>Our team will review it and reach out shortly.</p>"
-        "</body></html>"
-    )
-
-
-def attorney_notification_html(first_name: str, last_name: str, email: str) -> str:
-    return (
-        "<html><body>"
-        f"<p>New lead: {first_name} {last_name} &lt;{email}&gt;</p>"
-        "<p>Log in to the lead dashboard to review the application.</p>"
-        "</body></html>"
-    )

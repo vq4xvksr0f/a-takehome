@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LeadState } from '@/types/lead';
+import shared from '@/styles/shared.module.css';
+import detailStyles from './detail.module.css';
 
 interface Props {
   leadId: string;
@@ -59,16 +61,20 @@ export default function StateToggleButton({ leadId, initialState }: Props) {
   }
 
   return (
-    <span className="state-control">
+    <span className={detailStyles['state-control']}>
       <button
         type="button"
-        className={state === 'PENDING' ? 'btn btn-primary' : 'btn btn-secondary'}
+        className={
+          state === 'PENDING'
+            ? `${shared.btn} ${shared['btn-primary']}`
+            : `${shared.btn} ${shared['btn-secondary']}`
+        }
         onClick={toggle}
         disabled={pending}
       >
         {pending ? 'Updating…' : label}
       </button>
-      {error && <span className="inline-error">{error}</span>}
+      {error && <span className={detailStyles['inline-error']}>{error}</span>}
     </span>
   );
 }
