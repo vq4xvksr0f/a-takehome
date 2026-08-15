@@ -6,9 +6,9 @@ const validFile = new File(['x'], 'resume.pdf', { type: 'application/pdf' });
 describe('validateLeadForm', () => {
   it('accepts a fully valid form', () => {
     const errors = validateLeadForm({
-      firstName: 'Ken',
-      lastName: 'Wang',
-      email: 'ken@example.com',
+      firstName: 'Alex',
+      lastName: 'Rivera',
+      email: 'alex@example.com',
       resume: validFile,
     });
     expect(errors).toEqual({});
@@ -18,7 +18,7 @@ describe('validateLeadForm', () => {
     const errors = validateLeadForm({
       firstName: '   ',
       lastName: '',
-      email: 'ken@example.com',
+      email: 'alex@example.com',
       resume: validFile,
     });
     expect(errors.firstName).toBeTruthy();
@@ -32,8 +32,8 @@ describe('validateLeadForm', () => {
     ['spaces in@address.com', 'Enter a valid email address.'],
   ])('rejects invalid email %j', (email, message) => {
     const errors = validateLeadForm({
-      firstName: 'Ken',
-      lastName: 'Wang',
+      firstName: 'Alex',
+      lastName: 'Rivera',
       email,
       resume: validFile,
     });
@@ -42,9 +42,9 @@ describe('validateLeadForm', () => {
 
   it('requires a resume', () => {
     const errors = validateLeadForm({
-      firstName: 'Ken',
-      lastName: 'Wang',
-      email: 'ken@example.com',
+      firstName: 'Alex',
+      lastName: 'Rivera',
+      email: 'alex@example.com',
       resume: null,
     });
     expect(errors.resume).toBeTruthy();
