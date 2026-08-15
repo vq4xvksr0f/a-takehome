@@ -5,7 +5,6 @@ import { formatDate } from '@/lib/format';
 import type { Lead } from '@/types/lead';
 import AttorneyHeader from '@/components/auth/AttorneyHeader';
 import StateBadge from '../StateBadge';
-import StateToggleButton from './StateToggleButton';
 import layoutStyles from '../leads-layout.module.css';
 import shared from '@/styles/shared.module.css';
 import detailStyles from './detail.module.css';
@@ -79,10 +78,6 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
             <dd>{formatDate(lead.updated_at)}</dd>
           </div>
         </dl>
-
-        <div className={detailStyles['detail-actions']}>
-          <StateToggleButton leadId={lead.id} initialState={lead.state} />
-        </div>
       </div>
     </main>
   );
