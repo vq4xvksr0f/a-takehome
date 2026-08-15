@@ -47,7 +47,30 @@ export default function LeadCard({ lead }: Props) {
         <StateBadge state={lead.state} />
       </div>
       <div className={styles['lead-card-email']}>{lead.email}</div>
-      <div className={styles['lead-card-date']}>Submitted {formatDate(lead.created_at)}</div>
+      <div className={styles['lead-card-bottom']}>
+        <span className={styles['lead-card-date']}>Submitted {formatDate(lead.created_at)}</span>
+        <Link
+          href={`/leads/${lead.id}`}
+          className={styles['view-link']}
+          aria-label={`View ${lead.first_name} ${lead.last_name}`}
+          // Don't let the link click start a drag.
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          View
+          {/* Heroicons: chevron-right (outline), MIT licensed. */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            aria-hidden="true"
+            className={styles['view-icon']}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </Link>
+      </div>
     </div>
   );
 }
