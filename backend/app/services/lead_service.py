@@ -95,15 +95,23 @@ class LeadService:
             lead.resume_object_key, expires=RESUME_URL_EXPIRES_SECONDS
         )
 
-    def mark_reached_out(self, lead_id: str, new_state: str) -> Lead:
-        """Transition a lead to REACHED_OUT (the only legal transition, §5)."""
+    def update_state(self, lead_id: str, new_state: str) -> Lead:
+        """Transition a lead between PENDING and REACHED_OUT (§5).
+
+        The state machine allows a lead to move between the two states in
+        either direction. Only the two known states are legal, and a no-op
+        "transition" to the current state is a 409 like any other illegal value.
+        """
         lead = self.get_lead(lead_id)
-        if new_state != "REACHED_OUT" or lead.state != "PENDING":
+        if new_state not in ("PENDING", "REACHED_OUT"):
             raise conflict(
-                f"Cannot transition lead from {lead.state} to {new_state}; "
-                "only PENDING -> REACHED_OUT is allowed"
+                f'Cannot transition lead to {new_state!r}; '
+                'state must be "PENDING" or "REACHED_OUT"'
             )
-        lead.state = "REACHED_OUT"
+        if new_state == lead.state:
+            raise conflict(f"Lead is already {lead.state}")
+        previous = lead.state
+        lead.state = new_state
         updated = self._leads.save(lead)
-        logger.info("lead %s transitioned PENDING -> REACHED_OUT", lead.id)
+        logger.info("lead %s transitioned %s -> %s", lead.id, previous, new_state)
         return updated

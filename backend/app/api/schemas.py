@@ -32,7 +32,7 @@ class LeadCreateResponse(LeadDetail):
 
 
 class LeadStateUpdate(BaseModel):
-    state: str = Field(..., description='Only "REACHED_OUT" is a legal value.')
+    state: str = Field(..., description='Target state: "PENDING" or "REACHED_OUT".')
 
 
 class _EmailCheck(BaseModel):

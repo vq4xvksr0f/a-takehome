@@ -162,12 +162,13 @@ public registration endpoint exists.
   pass through the FastAPI process, and MinIO itself is never exposed publicly
   without a signature.
 
-**Mark REACHED_OUT** — `PATCH /api/leads/{id}` with `{ "state": "REACHED_OUT" }`:
+**Update state** — `PATCH /api/leads/{id}` with `{ "state": "PENDING" | "REACHED_OUT" }`:
 - Backend validates the JWT, loads the lead, checks the transition is legal
-  (`PENDING → REACHED_OUT` only; anything else → `409 Conflict`), updates the
-  row, returns the updated lead.
-- The UI disables/marks the action once applied; the transition is
-  intentionally one-way per the required lifecycle.
+  (`PENDING ↔ REACHED_OUT`; unknown states and no-op transitions to the current
+  state → `409 Conflict`), updates the row, returns the updated lead.
+- A lead moves between `PENDING` and `REACHED_OUT` in either direction. The
+  board exposes both directions via drag-and-drop; the detail page offers a
+  toggle button.
 
 ## 6. Database Schema
 
@@ -366,7 +367,7 @@ requires the JWT cookie.
 | GET    | `/api/leads`                | JWT    | Paginated list of leads (summary fields)      |
 | GET    | `/api/leads/{id}`           | JWT    | Full lead detail                              |
 | GET    | `/api/leads/{id}/resume`    | JWT    | 302 → pre-signed MinIO/S3 download URL        |
-| PATCH  | `/api/leads/{id}`           | JWT    | Body `{state: "REACHED_OUT"}`; state machine  |
+| PATCH  | `/api/leads/{id}`           | JWT    | Body `{state}`; move between PENDING/REACHED_OUT |
 | GET    | `/api/health`               | Public | Liveness probe (used by Compose healthcheck)  |
 
 Conventions: UUIDs in path params; `201` on creation; pagination via
@@ -382,8 +383,8 @@ Conventions: UUIDs in path params; `201` on creation; pagination via
   deliberately indistinguishable for login), `403` reserved for
   authenticated-but-forbidden (currently unused; single role).
 - **Not found**: `404` for unknown lead ids.
-- **Illegal state transition**: `409 Conflict` (e.g. PATCHing an already
-  `REACHED_OUT` lead).
+- **Illegal state transition**: `409 Conflict` (unknown state value, or a
+  no-op PATCH to the lead's current state).
 - **Upload violations**: `413` (too large), `415` (unsupported media type).
 - **Unexpected errors**: a global exception handler logs the full traceback
   server-side and returns a generic `500` — internals never leak to clients.
@@ -562,8 +563,8 @@ needed to demonstrate the system working correctly.
 - One shared notification inbox for new-lead emails (`ATTORNEY_NOTIFY_EMAIL`),
   not per-attorney routing.
 - Resume formats restricted to `.pdf`, `.doc`, `.docx`, ≤ 10 MB.
-- `REACHED_OUT` is terminal (no transition back); duplicate applications from
-  the same email are allowed.
+- Lead state moves between `PENDING` and `REACHED_OUT`; duplicate applications
+  from the same email are allowed.
 - The reviewer has (or will create) a free Resend account + API key; without
   one, submission still works and email failures are logged.
 - The browser reaches the app only through Next.js on `:3000`; all API calls

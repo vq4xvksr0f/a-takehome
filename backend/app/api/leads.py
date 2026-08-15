@@ -106,4 +106,4 @@ def update_lead_state(
     service: LeadService = Depends(get_lead_service),
     _: Attorney = Depends(get_current_attorney),
 ) -> Lead:
-    return service.mark_reached_out(lead_id, body.state)
+    return service.update_state(lead_id, body.state)
