@@ -1,10 +1,8 @@
-# Pre-commit hooks: lint/format checks before each commit.
 # Install: pip install pre-commit (or uv tool install pre-commit), then
 # `pre-commit install` in the repo root. Skip once with `git commit -n`.
 repos:
   - repo: local
     hooks:
-      # Backend: ruff lint + format (runs from the project's own venv).
       - id: ruff-check
         name: ruff check (backend)
         entry: backend/.venv/bin/ruff check
@@ -22,7 +20,15 @@ repos:
         files: ^backend/
         pass_filenames: false
         always_run: false
-      # Frontend: oxlint (fast, zero-config Rust linter).
+      - id: pytest
+        name: pytest (backend)
+        entry: bash -c 'cd backend && .venv/bin/python -m pytest tests -q' --
+        language: system
+        types: [python]
+        files: ^backend/
+        pass_filenames: false
+        always_run: false
+        require_serial: true
       - id: oxlint
         name: oxlint (frontend)
         entry: npx oxlint
@@ -33,3 +39,12 @@ repos:
         always_run: false
         require_serial: true
         verbose: false
+      - id: vitest
+        name: vitest (frontend)
+        entry: npm test --prefix frontend --
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
+        files: ^frontend/src/
+        pass_filenames: false
+        always_run: false
+        require_serial: true
