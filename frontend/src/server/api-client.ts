@@ -28,7 +28,7 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   return fetch(`http://127.0.0.1:${port}${path}`, {
     ...init,
     headers: {
-      ...(init.headers || {}),
+      ...init.headers,
       cookie: cookieHeader,
     },
     // Lead data changes constantly; never serve a cached response.

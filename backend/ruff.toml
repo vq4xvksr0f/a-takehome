@@ -1,0 +1,14 @@
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[lint.per-file-ignores]
+# FastAPI's DI idiom is `Depends(...)` in argument defaults — documented
+# FastAPI pattern, not a bug.
+"app/api/*" = ["B008"]
+# tests set DATABASE_URL etc. before importing the app; the re-export in
+# email_client sits below the adapter classes by design.
+"tests/*" = ["B011", "E402"]
+"app/adapters/email_client.py" = ["E402"]

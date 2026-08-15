@@ -33,19 +33,13 @@ class EmailService:
             )
             logger.info("sent prospect confirmation for lead %s", lead.id)
         except Exception:
-            logger.exception(
-                "Failed to send prospect confirmation for lead %s", lead.id
-            )
+            logger.exception("Failed to send prospect confirmation for lead %s", lead.id)
         try:
             self._email.send(
                 to=notify_email,
                 subject=ATTORNEY_SUBJECT,
-                html=attorney_notification_html(
-                    lead.first_name, lead.last_name, lead.email
-                ),
+                html=attorney_notification_html(lead.first_name, lead.last_name, lead.email),
             )
             logger.info("sent attorney notification for lead %s", lead.id)
         except Exception:
-            logger.exception(
-                "Failed to send attorney notification for lead %s", lead.id
-            )
+            logger.exception("Failed to send attorney notification for lead %s", lead.id)

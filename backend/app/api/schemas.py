@@ -28,8 +28,6 @@ class LeadDetail(LeadSummary):
 class LeadCreateResponse(LeadDetail):
     """201 response body for POST /api/leads (the lead's public fields)."""
 
-    pass
-
 
 class LeadStateUpdate(BaseModel):
     state: str = Field(..., description='Target state: "PENDING" or "REACHED_OUT".')
