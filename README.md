@@ -18,28 +18,47 @@ the reasoning behind each choice.
 
 ## Run it locally
 
-**Prerequisite:** Docker with the Compose plugin (`docker compose version`).
+**Prerequisites:** Docker with the Compose plugin (`docker compose version`),
+and `make` (preinstalled on macOS/Linux).
+
+First-time setup (builds the stack, waits for the backend to be healthy,
+then seeds demo leads, resumes, and activity):
 
 ```bash
 cp .env.example .env
-docker compose up --build
+make setup
 ```
 
 Then open **http://localhost:3300**.
 
+- `make setup` — first-time command. Brings the stack up **and** populates
+  demo data.
+- `make seed` — only populates demo data, assuming the stack is already
+  running. The seed is idempotent: it skips if leads already exist.
+
 The default `.env` runs the whole app with **no real secrets**: emails are
-logged to the backend console instead of being sent, and an admin account is
+logged to the backend console instead of being sent, and admin accounts are
 seeded for login.
+
+To wipe everything (database + resumes) and start fresh:
+
+```bash
+docker compose down -v
+make setup
+```
 
 ### Log in to the attorney UI
 
-Go to **http://localhost:3300/login**:
+Go to **http://localhost:3300/login**. Any of these seeded accounts works —
+they all share the password `password`:
 
-- **Email:** `admin@tryalma.com`
-- **Password:** `password`
+- `admin@tryalma.com` (the main one)
+- `attorney@tryalma.com`
+- `paralegal@tryalma.com`
 
-(These come from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env`; the seed is
-idempotent on startup.)
+(These come from `ADMIN_EMAIL` / `EXTRA_ADMIN_EMAILS` in `.env`, seeded
+idempotently on startup. The extra accounts exist so the activity feed shows
+actions attributed to different people.)
 
 ### Try the end-to-end flow
 
@@ -86,12 +105,8 @@ follow pre-signed resume-download URLs.
 ## Data persistence
 
 Resumes and the SQLite database live in named Docker volumes (`minio-data`,
-`sqlite-data`), so they survive `docker compose down`. To wipe everything and
-start fresh:
-
-```bash
-docker compose down -v
-```
+`sqlite-data`), so they survive `docker compose down`. See
+[Run it locally](#run-it-locally) above for how to wipe them and start fresh.
 
 ---
 
