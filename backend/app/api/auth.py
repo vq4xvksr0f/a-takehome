@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..config import Settings, get_settings
-from ..errors import unauthorized
+from ..core.config import Settings, get_settings
+from ..core.errors import unauthorized
+from ..core.security import create_access_token, verify_password
 from ..models import Attorney
-from ..schemas import AttorneyOut, LoginRequest
-from ..security import create_access_token, verify_password
 from .deps import TOKEN_COOKIE, get_db
+from .schemas import AttorneyOut, LoginRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

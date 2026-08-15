@@ -6,13 +6,13 @@ import jwt
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
-from ..config import Settings, get_settings
-from ..db import SessionLocal
-from ..email_client import EmailClient, build_email_client
-from ..errors import unauthorized
+from ..adapters.email_client import EmailClient, build_email_client
+from ..adapters.storage import BotoObjectStore, ObjectStore
+from ..core.config import Settings, get_settings
+from ..core.db import SessionLocal
+from ..core.errors import unauthorized
+from ..core.security import decode_access_token
 from ..models import Attorney
-from ..security import decode_access_token
-from ..storage import BotoObjectStore, ObjectStore
 
 TOKEN_COOKIE = "alma_token"
 

@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import resend
 
-from .config import Settings
+from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 

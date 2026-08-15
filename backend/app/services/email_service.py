@@ -6,7 +6,7 @@ truth, so a delivery failure is logged and never propagated to the caller.
 
 import logging
 
-from ..email_client import (
+from ..adapters.email_client import (
     EmailClient,
     attorney_notification_html,
     prospect_confirmation_html,

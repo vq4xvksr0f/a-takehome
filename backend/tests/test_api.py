@@ -22,14 +22,14 @@ os.environ.setdefault("ADMIN_EMAIL", "admin@tryalma.com")
 os.environ.setdefault("ADMIN_PASSWORD", "password")
 os.environ.setdefault("ATTORNEY_NOTIFY_EMAIL", "attorney@tryalma.com")
 
-from app.config import get_settings  # noqa: E402
+from app.core.config import get_settings  # noqa: E402
 
 get_settings.cache_clear()
 
-from app.deps import get_email_client, get_object_store  # noqa: E402
+from app.api.deps import get_email_client, get_object_store  # noqa: E402
+from app.core.db import SessionLocal  # noqa: E402
+from app.core.seed import seed_admin  # noqa: E402
 from app.main import app, run_migrations  # noqa: E402
-from app.seed import seed_admin  # noqa: E402
-from app.db import SessionLocal  # noqa: E402
 
 
 class FakeObjectStore:

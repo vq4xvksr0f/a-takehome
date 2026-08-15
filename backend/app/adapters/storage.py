@@ -13,7 +13,7 @@ from typing import BinaryIO
 import boto3
 from botocore.client import Config as BotoConfig
 
-from .config import get_settings
+from ..core.config import get_settings
 
 
 class ObjectStore(ABC):

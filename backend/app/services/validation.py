@@ -10,8 +10,8 @@ import os
 from fastapi import status
 from pydantic import ValidationError
 
-from .errors import api_error
-from .schemas import _EmailCheck
+from ..api.schemas import _EmailCheck
+from ..core.errors import api_error
 
 ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx"}
 MAX_RESUME_BYTES = 10 * 1024 * 1024  # 10 MB

@@ -9,12 +9,12 @@ import io
 import logging
 import uuid
 
-from ..errors import conflict, not_found
+from ..adapters.storage import ObjectStore
+from ..core.errors import conflict, not_found
 from ..models import Lead
 from ..repositories.lead_repository import LeadRepository
-from ..storage import ObjectStore
-from ..validation import read_resume_within_cap, resume_extension
 from .email_service import EmailService
+from .validation import read_resume_within_cap, resume_extension
 
 logger = logging.getLogger(__name__)
 

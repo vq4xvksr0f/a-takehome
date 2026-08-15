@@ -11,10 +11,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api import auth, health, leads
-from .config import get_settings
-from .db import SessionLocal
-from .errors import register_exception_handlers
-from .seed import seed_admin
+from .core.config import get_settings
+from .core.db import SessionLocal
+from .core.errors import register_exception_handlers
+from .core.seed import seed_admin
 
 logger = logging.getLogger(__name__)
 

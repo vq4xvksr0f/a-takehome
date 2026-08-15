@@ -5,8 +5,8 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..models import Attorney
 from .config import Settings
-from .models import Attorney
 from .security import hash_password
 
 logger = logging.getLogger(__name__)

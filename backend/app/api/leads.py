@@ -9,25 +9,25 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from ..config import Settings, get_settings
-from ..email_client import EmailClient
+from ..adapters.email_client import EmailClient
+from ..adapters.storage import ObjectStore
+from ..core.config import Settings, get_settings
 from ..models import Attorney, Lead
 from ..repositories.lead_repository import LeadRepository
-from ..schemas import (
-    LeadCreateResponse,
-    LeadDetail,
-    LeadStateUpdate,
-    LeadSummary,
-)
 from ..services.email_service import EmailService
 from ..services.lead_service import LeadService
-from ..storage import ObjectStore
-from ..validation import validate_email, validate_name
+from ..services.validation import validate_email, validate_name
 from .deps import (
     get_current_attorney,
     get_db,
     get_email_client,
     get_object_store,
+)
+from .schemas import (
+    LeadCreateResponse,
+    LeadDetail,
+    LeadStateUpdate,
+    LeadSummary,
 )
 
 router = APIRouter(prefix="/leads", tags=["leads"])
