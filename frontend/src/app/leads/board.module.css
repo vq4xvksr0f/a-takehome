@@ -53,8 +53,8 @@
 
 /* Per-lane icon hue, matching each lane's badge color (amber/green). */
 .lane-icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   flex-shrink: 0;
 }
 
