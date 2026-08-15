@@ -29,11 +29,11 @@ interfaces around the database, file storage, and email sending) so SQLite can
 be swapped for PostgreSQL, and MinIO for AWS S3, without touching business
 logic.
 
-**Same-origin rule:** the browser talks to Next.js (`:3000`) only. All
+**Same-origin rule:** the browser talks to Next.js (`:3300`) only. All
 `/api/*` requests are forwarded server-side by Next.js (via `rewrites()` or a
 route handler) to `http://backend:8000` on the internal Compose network. This
 is what makes the JWT cookie model work: the cookie is first-party on
-`localhost:3000`, so Next.js middleware/server components can read it, the
+`localhost:3300`, so Next.js middleware/server components can read it, the
 proxy forwards it to FastAPI, and no cross-origin CORS/credentials complexity
 is needed. Port 8000 stays reachable on the host for direct API inspection
 (`curl`, the auto-generated OpenAPI docs at `/docs`), but the frontend never
@@ -44,10 +44,10 @@ depends on it.
                         │            Docker Compose network         │
                         │                                          │
  Browser                │                                          │
-   │ :3000 only         │   ┌──────────────┐    ┌───────────────┐  │
+   │ :3300 only         │   ┌──────────────┐    ┌───────────────┐  │
    │                    │   │   Next.js    │    │    FastAPI    │  │
    ├────────────────────┼──▶│   frontend   │───▶│    backend    │  │
-   │                    │   │   (port 3000)│    │  (port 8000)  │  │
+   │                    │   │ (host :3300) │    │ (host :8800)  │  │
    │                    │   └──────────────┘    └───┬───────┬───┘  │
    │                    │       proxies /api/*      │       │      │
    │                    │                    ┌──────▼──┐ ┌──▼─────┐│
@@ -63,7 +63,7 @@ depends on it.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                              Next.js (3000)                            │
+│                              Next.js (3300)                            │
 │  ┌───────────────────────┐        ┌─────────────────────────────────┐  │
 │  │ Public pages          │        │ Attorney pages (auth required)  │  │
 │  │  /            (form)  │        │  /login    /leads   /leads/[id] │  │
@@ -72,7 +72,7 @@ depends on it.
 └─────────────┼───────────────────────────────────────┼──────────────────┘
               ▼                                       ▼
    (browser → same-origin /api/* → Next.js proxies to FastAPI,
-    forwarding the HttpOnly cookie; browser never calls :8000 directly)
+    forwarding the HttpOnly cookie; browser never calls the backend directly)
 ┌────────────────────────────────────────────────────────────────────────┐
 │                              FastAPI (8000)                            │
 │                                                                        │
@@ -125,7 +125,7 @@ rationale.)
    `bcrypt`).
 3. On success the backend issues a short-lived **signed JWT** (see §8) in a
    `Set-Cookie` header. Because the request arrived same-origin via the
-   Next.js proxy, the cookie is set **for `localhost:3000`** — first-party to
+   Next.js proxy, the cookie is set **for `localhost:3300`** — first-party to
    the frontend. The proxy passes the `Set-Cookie` header through untouched.
 4. The browser stores the **`HttpOnly`, `Secure`, `SameSite=Lax`** cookie
    (invisible to JavaScript) and the app redirects to `/leads`.
@@ -169,6 +169,10 @@ public registration endpoint exists.
 - A lead moves between `PENDING` and `REACHED_OUT` in either direction. The
   board exposes both directions via drag-and-drop; the detail page offers a
   toggle button.
+- Every successful transition is recorded in `lead_activities` (who moved it,
+  from/to, when) in the same transaction as the state update. The lead-detail
+  response embeds this audit trail (newest first, with the acting attorney's
+  email), and the detail page renders it as an activity timeline.
 
 ## 6. Database Schema
 
@@ -199,6 +203,19 @@ CREATE TABLE attorneys (
     created_at      TEXT NOT NULL
 );
 
+-- Audit trail of lead state transitions (§5): one row per successful PATCH.
+CREATE TABLE lead_activities (
+    id              TEXT PRIMARY KEY,                -- UUID4
+    lead_id         TEXT NOT NULL REFERENCES leads (id),
+    attorney_id     TEXT NOT NULL REFERENCES attorneys (id),
+    from_state      TEXT NOT NULL
+                    CHECK (from_state IN ('PENDING', 'REACHED_OUT')),
+    to_state        TEXT NOT NULL
+                    CHECK (to_state IN ('PENDING', 'REACHED_OUT')),
+    created_at      TEXT NOT NULL                    -- ISO-8601 UTC
+);
+CREATE INDEX idx_activity_lead_id ON lead_activities (lead_id);
+
 -- Outbox pattern (§9): DOCUMENTED, not implemented in the take-home.
 -- Kept minimal on purpose — just enough to show the shape.
 CREATE TABLE email_outbox (
@@ -222,6 +239,10 @@ Notes:
   assignment doesn't call for deduplication.
 - UUID primary keys avoid SQLite autoincrement quirks and leak nothing about
   record counts.
+- `lead_activities` is the audit trail for state transitions (§5): a row is
+  inserted in the same transaction as each `leads.state` update, so the state
+  change and its history can never diverge. It references `attorneys` so the
+  detail view can show *who* made each move, not just what changed.
 - `email_outbox` is the **transactional outbox** (§9): rows would be inserted
   in the same transaction as the `leads` row, so a lead is never persisted
   without its emails being durably queued. In the take-home it's defined only
@@ -273,17 +294,17 @@ from the environment. No sensitive data in the payload (JWTs are signed, not
 encrypted — anyone can read them).
 
 **Client-side storage:** the JWT lives in an **`HttpOnly` cookie**
-(`SameSite=Lax`), scoped to the **frontend origin** (`localhost:3000`) —
+(`SameSite=Lax`), scoped to the **frontend origin** (`localhost:3300`) —
 never in `localStorage`, and never on the FastAPI origin. Rationale:
 
 - `localStorage` tokens are readable by any JavaScript running on the page —
   one XSS and the token is gone. An `HttpOnly` cookie is invisible to
   JavaScript entirely.
-- Scoping the cookie to `:3000` is what lets Next.js middleware and server
+- Scoping the cookie to `:3300` is what lets Next.js middleware and server
   components read it for auth-gating, while the `/api` proxy forwards it to
-  FastAPI. (If the cookie were set on `:8000`, the browser would treat it as
-  a different origin and never send it to Next.js — the same-origin proxy in
-  §1 exists precisely to avoid that.)
+  FastAPI. (If the cookie were set on the backend origin, the browser would
+  treat it as a different origin and never send it to Next.js — the
+  same-origin proxy in §1 exists precisely to avoid that.)
 - `SameSite=Lax` blocks the cookie on cross-site POSTs, which mitigates CSRF
   for our state-changing endpoints. (A note for hardening: if we ever move to
   `SameSite=None`/cross-origin deployments, we must add explicit CSRF tokens.)
@@ -291,7 +312,7 @@ never in `localStorage`, and never on the FastAPI origin. Rationale:
   `Secure` only when `COOKIE_SECURE=true` (production, behind HTTPS). On
   local plain-HTTP we deliberately omit it: although Chrome treats
   `localhost` as a secure context, a reviewer hitting the app via
-  `http://127.0.0.1:3000`, a LAN IP, or a stricter browser could otherwise
+  `http://127.0.0.1:3300`, a LAN IP, or a stricter browser could otherwise
   have the cookie silently rejected — login would "succeed" yet never stick,
   with no error shown. Omitting `Secure` locally removes that failure mode
   entirely; the flag is switched on at the same time HTTPS is (§14).
@@ -365,7 +386,7 @@ requires the JWT cookie.
 | POST   | `/api/auth/login`           | Public | Email + password → sets JWT cookie            |
 | POST   | `/api/auth/logout`          | Public | Clears the JWT cookie                         |
 | GET    | `/api/leads`                | JWT    | Paginated list of leads (summary fields)      |
-| GET    | `/api/leads/{id}`           | JWT    | Full lead detail                              |
+| GET    | `/api/leads/{id}`           | JWT    | Full lead detail + activity audit trail       |
 | GET    | `/api/leads/{id}/resume`    | JWT    | 302 → pre-signed MinIO/S3 download URL        |
 | PATCH  | `/api/leads/{id}`           | JWT    | Body `{state}`; move between PENDING/REACHED_OUT |
 | GET    | `/api/health`               | Public | Liveness probe (used by Compose healthcheck)  |
@@ -473,9 +494,9 @@ system. Four services:
   - Raise the proxy/upload body limit to comfortably exceed the 10 MB resume
     cap, so a large-but-legal file isn't rejected at the proxy layer *before*
     FastAPI's own validation can return a clean `413`.
-  - Only port `3000` is required for the reviewer; `8000`/`9001` are optional
+  - Only port `3300` is required for the reviewer; `8800`/`9901` are optional
     debug conveniences. Nothing in the browser path should ever reference
-    `:8000` directly.
+    the backend host port directly.
 
 ## 14. Production Deployment Considerations
 
@@ -567,7 +588,7 @@ needed to demonstrate the system working correctly.
   from the same email are allowed.
 - The reviewer has (or will create) a free Resend account + API key; without
   one, submission still works and email failures are logged.
-- The browser reaches the app only through Next.js on `:3000`; all API calls
+- The browser reaches the app only through Next.js on `:3300`; all API calls
   are same-origin and proxied server-side to FastAPI (no cross-origin cookie
   or CORS-credentials setup). This resolves the cookie-origin concern: the
   JWT cookie is first-party on the frontend origin, readable by Next.js
