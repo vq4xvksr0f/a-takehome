@@ -12,7 +12,9 @@ those leads.
   one-shot bucket-creation job.
 
 See [`docs/system-design.md`](docs/system-design.md) for the full design and
-the reasoning behind each choice.
+the reasoning behind each choice. For the "how this was built" side,
+[`docs/prompt-log.md`](docs/prompt-log.md) has curated excerpts from the
+agent-assisted build sessions.
 
 ---
 
@@ -115,7 +117,7 @@ Resumes and the SQLite database live in named Docker volumes (`minio-data`,
 ```
 backend/     FastAPI app (app/), Alembic migrations, pytest tests
 frontend/    Next.js app (App Router)
-docs/        system-design.md and other documentation
+docs/        system-design.md, prompt-log.md (agent session excerpts)
 docker-compose.yml
 .env.example
 ```
