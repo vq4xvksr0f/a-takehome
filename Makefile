@@ -1,4 +1,4 @@
-.PHONY: up down logs seed test lint format typecheck build
+.PHONY: up down logs seed setup test lint format typecheck build
 
 # ── Stack ─────────────────────────────────────────────────
 up:
@@ -9,6 +9,15 @@ down:
 
 logs:
 	docker compose logs -f
+
+# One-command reviewer setup: bring the stack up, wait for the backend to be
+# healthy, then populate demo data.
+setup: up
+	@echo "Waiting for backend to be healthy..."
+	@until docker compose exec -T backend \
+		python -c "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').status==200 else 1)" \
+		>/dev/null 2>&1; do sleep 1; done
+	@$(MAKE) seed
 
 # Populate the running stack with fake demo leads (+ resumes + activity).
 # Idempotent — skips if leads already exist. Run after `make up`.
