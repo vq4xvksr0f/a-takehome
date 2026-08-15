@@ -1,0 +1,63 @@
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    ports:
+      - "8800:8000"
+    volumes:
+      - sqlite-data:/data
+    depends_on:
+      minio:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # BACKEND_URL is baked into the Next.js build (rewrites are build-time),
+        # so it must be a build arg, not just a runtime env var.
+        BACKEND_URL: ${BACKEND_URL:-http://backend:8000}
+    env_file: .env
+    ports:
+      - "3300:3000"
+    depends_on:
+      - backend
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    ports:
+      - "9900:9000"
+      - "9901:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${S3_ACCESS_KEY:-minioadmin} $${S3_SECRET_KEY:-minioadmin};
+      mc mb -p local/$${S3_BUCKET:-resumes} || true;
+      echo 'bucket ready';
+      "
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+      S3_BUCKET: ${S3_BUCKET:-resumes}
+
+volumes:
+  sqlite-data:
+  minio-data:
