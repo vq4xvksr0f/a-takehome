@@ -51,9 +51,9 @@ def seed_demo_data(db: Session, object_store: ObjectStore) -> None:
         logger.info("Leads already exist; skipping demo seed")
         return
 
-    admin = db.scalar(select(Attorney).limit(1))
-    if admin is None:
-        logger.info("No attorney found; skipping demo seed")
+    attorneys = list(db.scalars(select(Attorney)).all())
+    if not attorneys:
+        logger.info("No attorneys found; skipping demo seed")
         return
 
     now = datetime.now(UTC)
@@ -82,15 +82,17 @@ def seed_demo_data(db: Session, object_store: ObjectStore) -> None:
         db.add(lead)
         db.flush()  # assign lead.id
 
-        # About half have been reached out to; record the transition activity.
+        # About half have been reached out to; record the transition, attributed
+        # round-robin across the attorneys so the activity feed shows a mix.
         if i % 2 == 0:
+            actor = attorneys[(i // 2) % len(attorneys)]
             reached = created + timedelta(days=random.randint(0, 3), hours=1)
             lead.state = "REACHED_OUT"
             lead.updated_at = reached.isoformat()
             db.add(
                 LeadActivity(
                     lead_id=lead.id,
-                    attorney_id=admin.id,
+                    attorney_id=actor.id,
                     from_state="PENDING",
                     to_state="REACHED_OUT",
                     created_at=reached.isoformat(),
@@ -99,4 +101,4 @@ def seed_demo_data(db: Session, object_store: ObjectStore) -> None:
         leads_created += 1
 
     db.commit()
-    logger.info("Seeded %d demo leads (attributed to %s)", leads_created, admin.email)
+    logger.info("Seeded %d demo leads across %d attorneys", leads_created, len(attorneys))
