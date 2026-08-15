@@ -26,9 +26,7 @@ def login(
     settings: Settings = Depends(get_settings),
 ) -> Attorney:
     attorney = db.scalar(select(Attorney).where(Attorney.email == body.email))
-    if attorney is None or not verify_password(
-        body.password, attorney.password_hash
-    ):
+    if attorney is None or not verify_password(body.password, attorney.password_hash):
         # Deliberately generic: don't reveal whether the account exists.
         logger.warning("failed login attempt for %s", body.email)
         raise unauthorized("Invalid credentials")
@@ -50,4 +48,3 @@ def login(
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(response: Response) -> None:
     response.delete_cookie(TOKEN_COOKIE, path="/")
-    return None

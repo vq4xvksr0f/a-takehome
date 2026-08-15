@@ -5,8 +5,9 @@ Revises:
 Create Date: 2026-08-14 00:00:00.000000
 """
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = "0001_initial"
 down_revision = None
@@ -31,13 +32,9 @@ def upgrade() -> None:
         sa.Column("resume_filename", sa.Text(), nullable=False),
         sa.Column("created_at", sa.Text(), nullable=False),
         sa.Column("updated_at", sa.Text(), nullable=False),
-        sa.CheckConstraint(
-            "state IN ('PENDING', 'REACHED_OUT')", name="ck_leads_state"
-        ),
+        sa.CheckConstraint("state IN ('PENDING', 'REACHED_OUT')", name="ck_leads_state"),
     )
-    op.create_index(
-        "idx_leads_created_at", "leads", [sa.text("created_at DESC")]
-    )
+    op.create_index("idx_leads_created_at", "leads", [sa.text("created_at DESC")])
     op.create_index("idx_leads_state", "leads", ["state"])
 
     op.create_table(
@@ -51,19 +48,13 @@ def upgrade() -> None:
     op.create_table(
         "email_outbox",
         sa.Column("id", sa.Text(), primary_key=True),
-        sa.Column(
-            "lead_id", sa.Text(), sa.ForeignKey("leads.id"), nullable=False
-        ),
+        sa.Column("lead_id", sa.Text(), sa.ForeignKey("leads.id"), nullable=False),
         sa.Column("recipient", sa.Text(), nullable=False),
         sa.Column("subject", sa.Text(), nullable=False),
         sa.Column("html", sa.Text(), nullable=False),
-        sa.Column(
-            "status", sa.Text(), nullable=False, server_default="pending"
-        ),
+        sa.Column("status", sa.Text(), nullable=False, server_default="pending"),
         sa.Column("created_at", sa.Text(), nullable=False),
-        sa.CheckConstraint(
-            "status IN ('pending', 'sent', 'failed')", name="ck_outbox_status"
-        ),
+        sa.CheckConstraint("status IN ('pending', 'sent', 'failed')", name="ck_outbox_status"),
     )
 
 

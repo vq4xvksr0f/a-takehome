@@ -4,7 +4,7 @@ Timestamps are ISO-8601 UTC strings (TEXT) for SQLite/PostgreSQL portability.
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,7 +17,7 @@ def new_uuid() -> str:
 
 
 def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class Lead(Base):
@@ -91,9 +91,7 @@ class EmailOutbox(Base):
     __tablename__ = "email_outbox"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=new_uuid)
-    lead_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("leads.id"), nullable=False
-    )
+    lead_id: Mapped[str] = mapped_column(Text, ForeignKey("leads.id"), nullable=False)
     recipient: Mapped[str] = mapped_column(Text, nullable=False)
     subject: Mapped[str] = mapped_column(Text, nullable=False)
     html: Mapped[str] = mapped_column(Text, nullable=False)
@@ -101,7 +99,5 @@ class EmailOutbox(Base):
     created_at: Mapped[str] = mapped_column(Text, nullable=False, default=utc_now_iso)
 
     __table_args__ = (
-        CheckConstraint(
-            "status IN ('pending', 'sent', 'failed')", name="ck_outbox_status"
-        ),
+        CheckConstraint("status IN ('pending', 'sent', 'failed')", name="ck_outbox_status"),
     )

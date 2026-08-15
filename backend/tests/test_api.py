@@ -23,14 +23,14 @@ os.environ.setdefault("ADMIN_EMAIL", "admin@tryalma.com")
 os.environ.setdefault("ADMIN_PASSWORD", "password")
 os.environ.setdefault("ATTORNEY_NOTIFY_EMAIL", "attorney@tryalma.com")
 
-from app.core.config import get_settings  # noqa: E402
+from app.core.config import get_settings
 
 get_settings.cache_clear()
 
-from app.api.deps import get_email_client, get_object_store  # noqa: E402
-from app.core.db import SessionLocal  # noqa: E402
-from app.core.seed import seed_admin  # noqa: E402
-from app.main import app, run_migrations  # noqa: E402
+from app.api.deps import get_email_client, get_object_store
+from app.core.db import SessionLocal
+from app.core.seed import seed_admin
+from app.main import app, run_migrations
 
 
 class FakeObjectStore:
@@ -140,10 +140,7 @@ def test_lead_list_and_detail_require_auth(client: TestClient) -> None:
     lead_id = _submit_lead(client).json()["id"]
     assert client.get(f"/api/leads/{lead_id}").status_code == 401
     assert client.get(f"/api/leads/{lead_id}/resume").status_code == 401
-    assert (
-        client.patch(f"/api/leads/{lead_id}", json={"state": "REACHED_OUT"}).status_code
-        == 401
-    )
+    assert client.patch(f"/api/leads/{lead_id}", json={"state": "REACHED_OUT"}).status_code == 401
 
 
 def test_login_sets_cookie_and_authed_list_works(client: TestClient) -> None:
@@ -154,9 +151,7 @@ def test_login_sets_cookie_and_authed_list_works(client: TestClient) -> None:
     assert resp.status_code == 200
     leads = resp.json()
     assert len(leads) >= 1
-    assert {"id", "first_name", "last_name", "email", "state", "created_at"} <= set(
-        leads[0]
-    )
+    assert {"id", "first_name", "last_name", "email", "state", "created_at"} <= set(leads[0])
     # Detail endpoint works too.
     detail = client.get(f"/api/leads/{leads[0]['id']}")
     assert detail.status_code == 200
@@ -239,9 +234,7 @@ def test_state_transitions_are_recorded_in_activity(client: TestClient) -> None:
 
 def test_patch_unknown_lead_is_404(client: TestClient) -> None:
     _login(client)
-    resp = client.patch(
-        f"/api/leads/{uuid.uuid4()}", json={"state": "REACHED_OUT"}
-    )
+    resp = client.patch(f"/api/leads/{uuid.uuid4()}", json={"state": "REACHED_OUT"})
     assert resp.status_code == 404
     assert resp.json()["code"] == "NOT_FOUND"
 

@@ -106,8 +106,7 @@ class LeadService:
         lead = self.get_lead(lead_id)
         if new_state not in ("PENDING", "REACHED_OUT"):
             raise conflict(
-                f'Cannot transition lead to {new_state!r}; '
-                'state must be "PENDING" or "REACHED_OUT"'
+                f'Cannot transition lead to {new_state!r}; state must be "PENDING" or "REACHED_OUT"'
             )
         if new_state == lead.state:
             raise conflict(f"Lead is already {lead.state}")
