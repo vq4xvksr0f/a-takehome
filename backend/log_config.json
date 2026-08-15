@@ -3,7 +3,7 @@
   "disable_existing_loggers": false,
   "formatters": {
     "default": {
-      "()": "app.core.logging_format.UtcIsoFormatter",
+      "()": "app.core.config.UtcIsoFormatter",
       "format": "%(asctime)s %(levelname)s [%(name)s] %(message)s"
     }
   },

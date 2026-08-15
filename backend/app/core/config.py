@@ -2,12 +2,30 @@
 
 The variable names match the root `.env.example` exactly — that file is the
 source of truth for the configuration contract.
+
+Also hosts UtcIsoFormatter, the logging formatter log_config.json points at.
+It lives here (rather than a one-class module) because this module is imported
+early, has no heavy deps, and is safe for dictConfig to import by dotted path.
 """
 
+import logging
+from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class UtcIsoFormatter(logging.Formatter):
+    """Render log timestamps as ISO-8601 UTC with a trailing 'Z'.
+
+    Containers run in UTC, and a naive timestamp doesn't say so — this makes
+    the timezone explicit (e.g. 2026-08-15T03:37:14.809Z).
+    """
+
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
+        dt = datetime.fromtimestamp(record.created, tz=UTC)
+        return dt.strftime("%Y-%m-%dT%H:%M:%S") + f".{int(record.msecs):03d}Z"
 
 
 class Settings(BaseSettings):
@@ -23,11 +41,6 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = "admin@tryalma.com"
     ADMIN_PASSWORD: str = "password"
     EXTRA_ADMIN_EMAILS: str = ""  # comma-separated, seeded with ADMIN_PASSWORD
-
-    # ── Demo seed ─────────────────────────────────────────────────────
-    # Seed fake leads (+ resumes + activity) on startup for showcasing.
-    # Off by default; enable only in local/demo environments.
-    SEED_DEMO_DATA: bool = False
 
     @property
     def admin_emails(self) -> list[str]:

@@ -1,4 +1,4 @@
-.PHONY: up down logs test lint format typecheck build
+.PHONY: up down logs seed test lint format typecheck build
 
 # ── Stack ─────────────────────────────────────────────────
 up:
@@ -9,6 +9,11 @@ down:
 
 logs:
 	docker compose logs -f
+
+# Populate the running stack with fake demo leads (+ resumes + activity).
+# Idempotent — skips if leads already exist. Run after `make up`.
+seed:
+	docker compose exec backend python -m app.core.demo_seed
 
 # ── Checks ────────────────────────────────────────────────
 test:

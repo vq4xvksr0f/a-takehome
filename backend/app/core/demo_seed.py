@@ -1,9 +1,10 @@
-"""Optional demo seed: populate realistic-looking leads for showcasing the app.
+"""Demo seed: populate realistic-looking leads for showcasing the app.
 
-Enabled via SEED_DEMO_DATA=true. Idempotent — skipped entirely if any leads
-already exist. Generates fake names/emails (Faker), a small valid PDF per lead
-(so the resume Download link works in the demo), and activity history on the
-leads that have been "reached out", attributed to the seeded admin.
+Run on demand with `make seed` (or `python -m app.core.demo_seed` against the
+running stack). Idempotent — skipped entirely if any leads already exist.
+Generates fake names/emails (Faker), a small valid PDF per lead (so the resume
+Download link works in the demo), and activity history on the leads that have
+been "reached out", attributed across the seeded attorneys.
 """
 
 import io
@@ -15,8 +16,9 @@ from faker import Faker
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ..adapters.storage import ObjectStore
+from ..adapters.storage import BotoObjectStore, ObjectStore
 from ..models import Attorney, Lead, LeadActivity
+from .db import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -102,3 +104,14 @@ def seed_demo_data(db: Session, object_store: ObjectStore) -> None:
 
     db.commit()
     logger.info("Seeded %d demo leads across %d attorneys", leads_created, len(attorneys))
+
+
+def main() -> None:
+    """CLI entrypoint: `python -m app.core.demo_seed`."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    with SessionLocal() as db:
+        seed_demo_data(db, BotoObjectStore())
+
+
+if __name__ == "__main__":
+    main()

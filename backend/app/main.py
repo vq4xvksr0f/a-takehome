@@ -12,11 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from alembic import command as alembic_command
 
-from .adapters.storage import BotoObjectStore
 from .api import auth, health, leads
 from .core.config import get_settings
 from .core.db import SessionLocal
-from .core.demo_seed import seed_demo_data
 from .core.errors import register_exception_handlers
 from .core.seed import seed_admin
 
@@ -37,8 +35,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     run_migrations()
     with SessionLocal() as db:
         seed_admin(db, settings)
-        if settings.SEED_DEMO_DATA:
-            seed_demo_data(db, BotoObjectStore())
     yield
 
 
