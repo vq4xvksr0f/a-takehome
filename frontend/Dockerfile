@@ -22,6 +22,12 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# The standalone server.js defaults hostname to os.hostname(), which inside a
+# container resolves to the container's interface IP only (not 127.0.0.1).
+# Server Components fetch http://127.0.0.1:$PORT/api/* to go through the
+# rewrites() proxy (frontend/lib/api.ts), so the server must listen on
+# loopback too — bind all interfaces.
+ENV HOSTNAME=0.0.0.0
 
 # Don't run as root.
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs

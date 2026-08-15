@@ -5,11 +5,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import Settings, get_settings
-from ..deps import TOKEN_COOKIE, get_db
 from ..errors import unauthorized
 from ..models import Attorney
 from ..schemas import AttorneyOut, LoginRequest
 from ..security import create_access_token, verify_password
+from .deps import TOKEN_COOKIE, get_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
