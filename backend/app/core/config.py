@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "password"
     EXTRA_ADMIN_EMAILS: str = ""  # comma-separated, seeded with ADMIN_PASSWORD
 
+    # ── Demo seed ─────────────────────────────────────────────────────
+    # Seed fake leads (+ resumes + activity) on startup for showcasing.
+    # Off by default; enable only in local/demo environments.
+    SEED_DEMO_DATA: bool = False
+
     @property
     def admin_emails(self) -> list[str]:
         emails = [self.ADMIN_EMAIL]
