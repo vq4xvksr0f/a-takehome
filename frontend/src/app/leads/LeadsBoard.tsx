@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   DndContext,
   DragOverlay,
@@ -44,14 +46,61 @@ export default function LeadsBoard({ initialLeads }: Props) {
     handleDragCancel,
   } = useLeadsBoard(initialLeads);
 
+  const [query, setQuery] = useState('');
+
+  // Client-side search over the already-loaded leads (name or email).
+  // Filtering is visual only — dnd state stays keyed to the full list.
+  const q = query.trim().toLowerCase();
+  const filteredLanes = useMemo(() => {
+    if (!q) return lanes;
+    const match = (l: LeadSummary) =>
+      `${l.first_name} ${l.last_name}`.toLowerCase().includes(q) ||
+      l.email.toLowerCase().includes(q);
+    return {
+      PENDING: lanes.PENDING.filter(match),
+      REACHED_OUT: lanes.REACHED_OUT.filter(match),
+    } as Record<(typeof LANES)[number], LeadSummary[]>;
+  }, [lanes, q]);
+
+  const total = lanes.PENDING.length + lanes.REACHED_OUT.length;
+
   const sensors = useSensors(
     // Require a small movement before a drag starts so clicks still select.
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  if (total === 0) {
+    return (
+      <div className={boardStyles['board-empty-state']}>
+        <p className={boardStyles['board-empty-title']}>No leads yet</p>
+        <p className={boardStyles['board-empty-copy']}>
+          Applications submitted through the{' '}
+          <Link href="/" className={boardStyles['board-empty-link']}>
+            public form
+          </Link>{' '}
+          will appear here.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
+      <div className={boardStyles['board-toolbar']}>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search name or email…"
+          aria-label="Search leads"
+          className={boardStyles['board-search']}
+        />
+        <span className={boardStyles['board-total']}>
+          {total} lead{total === 1 ? '' : 's'} · {lanes.PENDING.length} pending
+        </span>
+      </div>
+
       {error && (
         <div className={`${shared.alert} ${shared['alert-error']}`} role="alert">
           {error}
@@ -71,7 +120,7 @@ export default function LeadsBoard({ initialLeads }: Props) {
               key={state}
               state={state}
               title={LANE_TITLES[state]}
-              leads={lanes[state]}
+              leads={filteredLanes[state]}
               highlighted={overLane === state}
             />
           ))}
