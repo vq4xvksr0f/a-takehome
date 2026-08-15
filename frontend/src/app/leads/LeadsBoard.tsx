@@ -14,6 +14,8 @@ import type { LeadSummary } from '@/types/lead';
 import BoardLane from './BoardLane';
 import LeadCard from './LeadCard';
 import { LANES, useLeadsBoard } from './useLeadsBoard';
+import boardStyles from './board.module.css';
+import shared from '@/styles/shared.module.css';
 
 const LANE_TITLES: Record<(typeof LANES)[number], string> = {
   PENDING: 'Pending',
@@ -51,7 +53,7 @@ export default function LeadsBoard({ initialLeads }: Props) {
   return (
     <div>
       {error && (
-        <div className="alert alert-error" role="alert">
+        <div className={`${shared.alert} ${shared['alert-error']}`} role="alert">
           {error}
         </div>
       )}
@@ -63,7 +65,7 @@ export default function LeadsBoard({ initialLeads }: Props) {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="board">
+        <div className={boardStyles.board}>
           {LANES.map((state) => (
             <BoardLane
               key={state}

@@ -1,0 +1,41 @@
+/* ── Success page (post-submit confirmation) ────────────── */
+.success-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.success-card {
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+  padding: 3rem 2.5rem;
+}
+
+.success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+}
+
+.success-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.success-message {
+  margin: 0 0 2rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}

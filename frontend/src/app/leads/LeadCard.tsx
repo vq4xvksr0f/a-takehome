@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { LeadSummary } from '@/types/lead';
 import { formatDate } from '@/lib/format';
 import StateBadge from './StateBadge';
+import styles from './LeadCard.module.css';
 
 interface Props {
   lead: LeadSummary;
@@ -30,14 +31,14 @@ export default function LeadCard({ lead }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`lead-card${isDragging ? ' is-dragging-source' : ''}`}
+      className={`${styles['lead-card']}${isDragging ? ` ${styles['is-dragging-source']}` : ''}`}
       {...attributes}
       {...listeners}
     >
-      <div className="lead-card-top">
+      <div className={styles['lead-card-top']}>
         <Link
           href={`/leads/${lead.id}`}
-          className="row-link lead-card-name"
+          className={`${styles['row-link']} ${styles['lead-card-name']}`}
           // Don't let the link click start a drag.
           onPointerDown={(e) => e.stopPropagation()}
         >
@@ -45,8 +46,8 @@ export default function LeadCard({ lead }: Props) {
         </Link>
         <StateBadge state={lead.state} />
       </div>
-      <div className="lead-card-email">{lead.email}</div>
-      <div className="lead-card-date">Submitted {formatDate(lead.created_at)}</div>
+      <div className={styles['lead-card-email']}>{lead.email}</div>
+      <div className={styles['lead-card-date']}>Submitted {formatDate(lead.created_at)}</div>
     </div>
   );
 }

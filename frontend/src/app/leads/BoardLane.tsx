@@ -7,6 +7,7 @@ import {
 } from '@dnd-kit/sortable';
 import type { LeadState, LeadSummary } from '@/types/lead';
 import LeadCard from './LeadCard';
+import boardStyles from './board.module.css';
 
 interface Props {
   state: LeadState;
@@ -24,21 +25,24 @@ interface Props {
 export default function BoardLane({ state, title, leads, highlighted }: Props) {
   const { setNodeRef } = useDroppable({ id: state });
 
+  const laneClass =
+    state === 'PENDING' ? boardStyles.lanePending : boardStyles.laneReachedOut;
+
   return (
     <section
       ref={setNodeRef}
-      className={`board-lane board-lane-${state.toLowerCase()}${highlighted ? ' board-lane-over' : ''}`}
+      className={`${boardStyles['board-lane']} ${laneClass}${highlighted ? ` ${boardStyles.boardLaneOver}` : ''}`}
       aria-label={title}
     >
-      <header className="board-lane-header">
-        <h2 className="board-lane-title">{title}</h2>
-        <span className="lane-count">{leads.length}</span>
+      <header className={boardStyles['board-lane-header']}>
+        <h2 className={boardStyles['board-lane-title']}>{title}</h2>
+        <span className={boardStyles['lane-count']}>{leads.length}</span>
       </header>
 
       <SortableContext items={leads.map((l) => l.id)} strategy={verticalListSortingStrategy}>
-        <div className="board-lane-cards">
+        <div className={boardStyles['board-lane-cards']}>
           {leads.length === 0 ? (
-            <p className="board-lane-empty">No leads</p>
+            <p className={boardStyles['board-lane-empty']}>No leads</p>
           ) : (
             leads.map((lead) => <LeadCard key={lead.id} lead={lead} />)
           )}

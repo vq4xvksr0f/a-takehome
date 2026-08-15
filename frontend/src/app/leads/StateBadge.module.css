@@ -1,0 +1,18 @@
+/* ── Badges ─────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background: var(--color-pending-bg);
+  color: var(--color-pending-text);
+}
+
+.badge-reached-out {
+  background: var(--color-reached-bg);
+  color: var(--color-reached-text);
+}

@@ -1,0 +1,149 @@
+/* Shared building blocks: page headings, cards, forms, alerts, buttons. */
+.centered-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.page-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 650;
+}
+
+.page-subtitle {
+  margin: 0 0 1.5rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Cards ──────────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ── Forms ──────────────────────────────────────────────── */
+.field {
+  margin-bottom: 1rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.field input[type='text'],
+.field input[type='email'],
+.field input[type='password'] {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+.field input[type='file'] {
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  border-color: var(--color-primary);
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.field-hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.field-error {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-error);
+}
+
+.alert {
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.alert-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid #f3c2bf;
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.55rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: #fff;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f0f1f3;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 560px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}

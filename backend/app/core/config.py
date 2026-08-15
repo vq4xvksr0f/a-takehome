@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     # ── Admin seed ────────────────────────────────────────────────────
     ADMIN_EMAIL: str = "admin@tryalma.com"
     ADMIN_PASSWORD: str = "password"
+    EXTRA_ADMIN_EMAILS: str = ""  # comma-separated, seeded with ADMIN_PASSWORD
+
+    @property
+    def admin_emails(self) -> list[str]:
+        emails = [self.ADMIN_EMAIL]
+        emails.extend(e.strip() for e in self.EXTRA_ADMIN_EMAILS.split(",") if e.strip())
+        return emails
 
     # ── Email ─────────────────────────────────────────────────────────
     EMAIL_PROVIDER: Literal["console", "resend"] = "console"

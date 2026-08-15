@@ -13,17 +13,16 @@ logger = logging.getLogger(__name__)
 
 
 def seed_admin(db: Session, settings: Settings) -> None:
-    existing = db.scalar(
-        select(Attorney).where(Attorney.email == settings.ADMIN_EMAIL)
-    )
-    if existing is not None:
-        logger.info("Admin attorney %s already exists; skipping seed", settings.ADMIN_EMAIL)
-        return
-    db.add(
-        Attorney(
-            email=settings.ADMIN_EMAIL,
-            password_hash=hash_password(settings.ADMIN_PASSWORD),
+    for email in settings.admin_emails:
+        existing = db.scalar(select(Attorney).where(Attorney.email == email))
+        if existing is not None:
+            logger.info("Admin attorney %s already exists; skipping seed", email)
+            continue
+        db.add(
+            Attorney(
+                email=email,
+                password_hash=hash_password(settings.ADMIN_PASSWORD),
+            )
         )
-    )
+        logger.info("Seeded admin attorney %s", email)
     db.commit()
-    logger.info("Seeded admin attorney %s", settings.ADMIN_EMAIL)

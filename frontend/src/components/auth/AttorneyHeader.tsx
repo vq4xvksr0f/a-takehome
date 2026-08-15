@@ -1,5 +1,6 @@
 import { getCurrentAttorneyEmail } from '@/server/current-attorney';
 import AccountMenu from './AccountMenu';
+import styles from './AccountMenu.module.css';
 
 /**
  * Header for attorney pages: a compact account menu (avatar) in the top-right.
@@ -10,7 +11,7 @@ export default function AttorneyHeader() {
   if (!email) return null;
 
   return (
-    <div className="attorney-header">
+    <div className={styles['attorney-header']}>
       <AccountMenu email={email} />
     </div>
   );

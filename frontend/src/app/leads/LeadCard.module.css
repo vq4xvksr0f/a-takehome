@@ -1,0 +1,64 @@
+/* ── Lead card ──────────────────────────────────────────── */
+.lead-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.8rem 0.9rem;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  touch-action: none; /* required so dnd-kit's PointerSensor can drive drags */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lead-card:active {
+  cursor: grabbing;
+}
+
+/* The original card stays in the lane while its DragOverlay clone floats;
+   dim it so it reads as "being moved". */
+.lead-card.is-dragging-source {
+  opacity: 0.4;
+}
+
+/* The floating clone rendered in <DragOverlay>. Not referenced in TSX (the
+   overlay clone gets the plain .lead-card styles); kept for potential use. */
+.lead-card-overlay {
+  cursor: grabbing;
+  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.22);
+  border-color: var(--color-primary);
+}
+
+.lead-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.lead-card-name {
+  font-size: 0.95rem;
+}
+
+.lead-card-email {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
+.lead-card-date {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.row-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.row-link:hover {
+  text-decoration: underline;
+}

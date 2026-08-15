@@ -1,0 +1,35 @@
+/* Hidden native file input + styled picker button. */
+.file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.file-picker {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+  background: #fafbfc;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-picker:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+.file-picker:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
